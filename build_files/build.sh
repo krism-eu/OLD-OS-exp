@@ -35,11 +35,14 @@ dnf5 -y install @base-x @fonts @hardware-support \
   kmenuedit \
   plasma-nm \
   plasma-pa \
-  dolphin \
   kdegraphics-thumbnailers \
   breeze-icon-theme \
   breeze-gtk \
   kde-gtk-config \
   kcm_systemd \
   kde-partitionmanager \
-  kwalletmanager5
+  kwalletmanager5 \
+  kate \
+  ark \
+  spectacle \
+  plasma-discover
