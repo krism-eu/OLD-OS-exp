@@ -3,7 +3,7 @@ FROM scratch AS ctx
 COPY build_files /
 
 # Base Image
-FROM quay.io/fedora/fedora-bootc:43
+FROM ghcr.io/rakuos/rakuos-base:latest
 
 RUN rmdir /opt && ln -s -T /var/opt /opt
 
