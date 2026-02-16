@@ -23,7 +23,7 @@ set -ouex pipefail
 
 #systemctl enable podman.socket
 
-dnf5 install @base-x @fonts @hardware-support \
+dnf5 -y install @base-x @fonts @hardware-support \
   plasma-desktop \
   plasma-workspace \
   plasma-workspace-wayland \
