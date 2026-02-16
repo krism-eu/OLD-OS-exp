@@ -5,8 +5,6 @@ COPY build_files /
 # Base Image
 FROM ghcr.io/rakuos/rakuos-base:latest
 
-RUN rmdir /opt && ln -s -T /var/opt /opt
-
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
