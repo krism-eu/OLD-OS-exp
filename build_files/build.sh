@@ -22,3 +22,24 @@ set -ouex pipefail
 #### Example for enabling a System Unit File
 
 #systemctl enable podman.socket
+
+dnf5 install @base-x @fonts @hardware-support \
+  plasma-desktop \
+  plasma-workspace \
+  plasma-workspace-wayland \
+  sddm \
+  sddm-breeze \
+  konsole \
+  dolphin \
+  kwin \
+  kmenuedit \
+  plasma-nm \
+  plasma-pa \
+  dolphin \
+  kdegraphics-thumbnailers \
+  breeze-icon-theme \
+  breeze-gtk \
+  kde-gtk-config \
+  kcm_systemd \
+  kde-partitionmanager \
+  kwalletmanager5
