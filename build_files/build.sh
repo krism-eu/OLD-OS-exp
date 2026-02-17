@@ -51,5 +51,12 @@ dnf5 -y remove plasma-discover-offline-updates \
   plasma-discover-packagekit \
   PackageKit-command-not-found
 
+## install flatpaks
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install -y --noninteractive flathub org.mozilla.firefox
+flatpak install -y --noninteractive flathub org.kde.gwenview
+flatpak install -y --noninteractive flathub org.kde.kcalc
+flatpak install -y --noninteractive flathub org.kde.okular
+flatpak install -y --noninteractive flathub org.gtk.Gtk3theme.Breeze
 ## Enable Services
 systemctl enable sddm.service

@@ -1,0 +1,33 @@
+[customizations.installer.kickstart]
+contents = """
+%post --nochroot
+# Ensure DNS works inside the chroot
+cp /etc/resolv.conf /mnt/sysimage/etc/resolv.conf
+
+# Setup Flatpak in the installed system
+cat << EOF > /mnt/sysimage/root/setup-flatpaks.sh
+#!/bin/bash
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install -y --noninteractive flathub org.mozilla.firefox
+EOF
+
+chmod +x /mnt/sysimage/root/setup-flatpaks.sh
+# Execute script within the new system context
+chroot /mnt/sysimage /root/setup-flatpaks.sh
+%end
+"""
+
+[customizations.installer.modules]
+enable = [
+  "org.fedoraproject.Anaconda.Modules.Storage",
+  "org.fedoraproject.Anaconda.Modules.Runtime",
+  "org.fedoraproject.Anaconda.Modules.Network",
+  "org.fedoraproject.Anaconda.Modules.Security",
+  "org.fedoraproject.Anaconda.Modules.Services",
+  "org.fedoraproject.Anaconda.Modules.Users",
+  "org.fedoraproject.Anaconda.Modules.Timezone"
+]
+
+disable = [
+  "org.fedoraproject.Anaconda.Modules.Subscription",
+]
