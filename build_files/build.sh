@@ -52,6 +52,3 @@ dnf5 -y remove plasma-discover-offline-updates \
 
 ## Enable Services
 systemctl enable sddm.service
-
-## Install bundled Flatpaks
-flatpak install -y flathub org.mozilla.firefox
