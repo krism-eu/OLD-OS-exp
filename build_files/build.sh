@@ -43,6 +43,7 @@ dnf5 -y install @base-x @fonts @hardware-support \
   ark \
   spectacle \
   plasma-discover \
+  plasma-systemmonitor \
   scx-manager
 
 ## Remove packages
