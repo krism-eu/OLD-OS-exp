@@ -42,7 +42,8 @@ dnf5 -y install @base-x @fonts @hardware-support \
   kate \
   ark \
   spectacle \
-  plasma-discover
+  plasma-discover \
+  scx-manager
 
 ## Remove packages
 dnf5 -y remove plasma-discover-offline-updates \
