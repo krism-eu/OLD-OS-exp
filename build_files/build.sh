@@ -19,10 +19,7 @@ set -ouex pipefail
 # Disable COPRs so they don't end up enabled on the final image:
 # dnf5 -y copr disable ublue-os/staging
 
-#### Example for enabling a System Unit File
-
-#systemctl enable podman.socket
-
+## Install packages
 dnf5 -y install @base-x @fonts @hardware-support \
   plasma-desktop \
   plasma-workspace \
@@ -46,3 +43,14 @@ dnf5 -y install @base-x @fonts @hardware-support \
   ark \
   spectacle \
   plasma-discover
+
+## Remove packages
+dnf5 -y remove plasma-discover-offline-updates \
+  plasma-discover-packagekit \
+  PackageKit-command-not-found
+
+## Enable Services
+systemctl enable sddm.service
+
+## Install bundled Flatpaks
+flatpak install -y flathub org.mozilla.firefox
