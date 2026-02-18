@@ -51,9 +51,6 @@ dnf5 -y remove plasma-discover-offline-updates \
   plasma-discover-packagekit \
   PackageKit-command-not-found
 
-## add scripts and servives for RakuOS
-
-
 # Create Flatpak list
 cat << 'EOF' > /usr/share/rakuos/flatpaks.list
 # RakuOS KDE default apps
