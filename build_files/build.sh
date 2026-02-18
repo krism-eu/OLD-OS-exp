@@ -54,7 +54,9 @@ dnf5 -y install @base-x @fonts @hardware-support \
 ## Remove packages
 dnf5 -y remove plasma-discover-offline-updates \
   plasma-discover-packagekit \
-  PackageKit-command-not-found
+  PackageKit-command-not-found \
+  fedora-logos \
+  plasma-lookandfeel-fedora
 
 ## Enable Services
 systemctl enable plasmalogin.service
