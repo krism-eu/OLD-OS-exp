@@ -26,8 +26,7 @@ dnf5 -y install @base-x @fonts @hardware-support \
   plasma-workspace-wayland \
   plasma-browser-integration \
   kscreen \
-  sddm \
-  sddm-breeze \
+  plasma-login-manager \
   konsole \
   dolphin \
   kwin \
@@ -68,4 +67,4 @@ org.gtk.Gtk3theme.Breeze
 EOF
 
 ## Enable Services
-systemctl enable sddm.service
+systemctl enable plasmalogin.service
