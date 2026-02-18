@@ -35,6 +35,9 @@ dnf5 -y install @base-x @fonts @hardware-support \
   kdegraphics-thumbnailers \
   breeze-icon-theme \
   breeze-gtk \
+  bluedevil \
+  bluez \
+  bluez-obexd \
   kde-gtk-config \
   kcm_systemd \
   kde-partitionmanager \
