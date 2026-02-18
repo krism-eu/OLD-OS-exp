@@ -32,6 +32,7 @@ dnf5 -y install @base-x @fonts @hardware-support \
   dolphin \
   kwin \
   kmenuedit \
+  kinfocenter \
   plasma-nm \
   plasma-pa \
   kdegraphics-thumbnailers \
