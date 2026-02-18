@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -ouex pipefail
-
+FEDORA_VERSION="${FEDORA_VERSION:-43}"
 ### Install packages
 
 # Packages can be installed from any enabled yum repo on the image.
@@ -55,16 +55,6 @@ dnf5 -y install @base-x @fonts @hardware-support \
 dnf5 -y remove plasma-discover-offline-updates \
   plasma-discover-packagekit \
   PackageKit-command-not-found
-
-# Create Flatpak list
-cat << 'EOF' > /usr/share/rakuos/flatpaks.list
-# RakuOS KDE default apps
-org.mozilla.firefox
-org.kde.gwenview
-org.kde.kcalc
-org.kde.okular
-org.gtk.Gtk3theme.Breeze
-EOF
 
 ## Enable Services
 systemctl enable plasmalogin.service

@@ -1,0 +1,6 @@
+# RakuOS KDE default apps
+org.mozilla.firefox
+org.kde.gwenview
+org.kde.kcalc
+org.kde.okular
+org.gtk.Gtk3theme.Breeze
