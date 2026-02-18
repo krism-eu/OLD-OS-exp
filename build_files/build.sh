@@ -25,6 +25,7 @@ dnf5 -y install @base-x @fonts @hardware-support \
   plasma-workspace \
   plasma-workspace-wayland \
   plasma-browser-integration \
+  kscreen \
   sddm \
   sddm-breeze \
   konsole \
