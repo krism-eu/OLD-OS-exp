@@ -52,53 +52,17 @@ dnf5 -y remove plasma-discover-offline-updates \
   PackageKit-command-not-found
 
 ## add scripts and servives for RakuOS
-echo "Creating RakuOS first-boot Flatpak installer..."
-mkdir -p /usr/libexec/rakuos
-# Create the first-boot install script
-cat << 'EOF' > /usr/libexec/rakuos/rakuos-firstboot-flatpaks.sh
-#!/usr/bin/env bash
-set -euo pipefail
 
-echo "RakuOS: Installing default Flatpaks..."
 
-# Ensure Flathub exists
-if ! flatpak remote-list | grep -q flathub; then
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-fi
-
-# Install Flatpaks system-wide
-flatpak install -y --noninteractive --system flathub \
-    org.mozilla.firefox \
-    org.kde.gwenview \
-    org.kde.kcalc \
-    org.kde.okular \
-    org.gtk.Gtk3theme.Breeze
-
-echo "Flatpak installation complete."
-
-# Disable service so it never runs again
-systemctl disable rakuos-firstboot-flatpaks.service
-EOF
-
-chmod +x /usr/libexec/rakuos/rakuos-firstboot-flatpaks.sh
-
-# Create systemd service
-cat << 'EOF' > /etc/systemd/system/rakuos-firstboot-flatpaks.service
-[Unit]
-Description=RakuOS First Boot Flatpak Installer
-After=network-online.target
-Wants=network-online.target
-ConditionPathExists=/usr/libexec/rakuos/rakuos-firstboot-flatpaks.sh
-
-[Service]
-Type=oneshot
-ExecStart=/usr/libexec/rakuos/rakuos-firstboot-flatpaks.sh
-RemainAfterExit=false
-
-[Install]
-WantedBy=multi-user.target
+# Create Flatpak list
+cat << 'EOF' > /usr/share/rakuos/flatpaks.list
+# RakuOS KDE default apps
+org.mozilla.firefox
+org.kde.gwenview
+org.kde.kcalc
+org.kde.okular
+org.gtk.Gtk3theme.Breeze
 EOF
 
 ## Enable Services
-systemctl enable rakuos-firstboot-flatpaks.service
 systemctl enable sddm.service
