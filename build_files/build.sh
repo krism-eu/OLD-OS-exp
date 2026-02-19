@@ -62,5 +62,9 @@ rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop
 
+## Remove Fedora Wallpapers
+rm /usr/share/wallpapers/Fedora
+rm -rf /usr/share/wallpapers/F43
+
 ## Enable Services
 systemctl enable plasmalogin.service
