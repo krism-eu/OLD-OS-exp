@@ -16,6 +16,8 @@ chmod +x /mnt/sysimage/root/setup-flatpaks.sh
 chroot /mnt/sysimage /root/setup-flatpaks.sh
 %end
 """
+[customizations]
+hostname = "rakuos"
 
 [customizations.installer.modules]
 enable = [
@@ -28,6 +30,21 @@ enable = [
   "org.fedoraproject.Anaconda.Modules.Timezone"
 ]
 
+[customizations.locale]
+languages = ["en_US.UTF-8"]
+keyboard = "us"
+
+[customizations.iso]
+volume_id = "RakuOS KDE"
+application_id = "rakuos-kde"
+publisher = "RakuOS"
+
+[customizations.installer]
+languages = ["en_US.UTF-8"]
+
 disable = [
   "org.fedoraproject.Anaconda.Modules.Subscription",
 ]
+[[packages]]
+name = "flatpak"
+version = "*"
