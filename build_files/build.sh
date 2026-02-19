@@ -20,7 +20,7 @@ FEDORA_VERSION="${FEDORA_VERSION:-43}"
 # dnf5 -y copr disable ublue-os/staging
 
 ## Install packages
-dnf5 -y install @base-x @fonts @hardware-support \
+dnf5 -y install --exclude=plasma-lookandfeel-fedora @base-x @fonts @hardware-support \
   plasma-desktop \
   plasma-workspace \
   plasma-workspace-wayland \
@@ -56,6 +56,11 @@ dnf5 -y install @base-x @fonts @hardware-support \
 dnf5 -y remove plasma-discover-offline-updates \
   plasma-discover-packagekit \
   PackageKit-command-not-found
+
+## Remove Fedora Look and Feel
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop
 
 ## Enable Services
 systemctl enable plasmalogin.service
