@@ -20,8 +20,8 @@ FEDORA_VERSION="${FEDORA_VERSION:-43}"
 # dnf5 -y copr disable ublue-os/staging
 
 #fix Fonts
-rm -rf /usr/share/fonts
-mkdir -p /usr/share/fonts
+rm -rf /usr/local/share/fonts
+mkdir -p /usr/local/share/fonts
 ## Install packages
 dnf5 -y install @fonts @hardware-support \
   plasma-desktop \
