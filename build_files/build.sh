@@ -19,9 +19,6 @@ FEDORA_VERSION="${FEDORA_VERSION:-43}"
 # Disable COPRs so they don't end up enabled on the final image:
 # dnf5 -y copr disable ublue-os/staging
 
-#fix Fonts
-rm -rf /usr/local/share/fonts
-
 ## Install packages
 dnf5 -y install @fonts @hardware-support \
   plasma-desktop \
