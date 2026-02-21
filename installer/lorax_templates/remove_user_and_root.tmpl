@@ -1,7 +1,3 @@
-<%page args="tree, outputdir, runtime_img"/>
+# Disable user creation and root password via config
 
-# Remove user creation spoke
-removefrom runtime /usr/lib/anaconda/modules/users
-
-# Remove root password spoke
-removefrom runtime /usr/lib/anaconda/modules/rootpassword
+install /github/workspace/installer/files/anaconda.conf /etc/anaconda/anaconda.conf
