@@ -49,6 +49,7 @@ dnf5 -y install @fonts @hardware-support \
   spectacle \
   plasma-discover \
   plasma-systemmonitor \
+  plasma-setup \
   scx-manager
 
 ## Remove packages
@@ -66,4 +67,5 @@ rm /usr/share/wallpapers/Fedora
 rm -rf /usr/share/wallpapers/F43
 
 ## Enable Services
-systemctl enable plasmalogin.service
+systemctl enable plasmalogin.service \
+  plasma-setup.service
