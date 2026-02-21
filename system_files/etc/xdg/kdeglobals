@@ -1,0 +1,8 @@
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+
+[GTK]
+GTK2Theme=Breeze-Dark
+GTK3Theme=Breeze-Dark
+GTK4Theme=Breeze-Dark
+IconTheme=Breeze
