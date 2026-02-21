@@ -1,5 +1,7 @@
-%anaconda
-pwpolicy root --notempty --minlen=0 --nochanges --notstrict
-pwpolicy user --notempty --minlen=0 --nochanges --notstrict
-rootpw --lock
-%end
+<%page args="tree, outputdir, runtime_img"/>
+
+# Remove user creation spoke
+removefrom runtime /usr/lib/anaconda/modules/users
+
+# Remove root password spoke
+removefrom runtime /usr/lib/anaconda/modules/rootpassword
