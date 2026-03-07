@@ -48,6 +48,7 @@ dnf5 -y install @fonts @hardware-support \
   ark \
   spectacle \
   plasma-discover \
+  plasma-discover-packagekit \
   plasma-systemmonitor \
   plasma-setup \
   scx-manager
