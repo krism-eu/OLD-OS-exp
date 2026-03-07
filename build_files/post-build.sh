@@ -7,7 +7,7 @@ mv /usr/bin/dnf5 /usr/bin/dnf5.real
 mv /usr/bin/dnf /usr/bin/dnf.real
 
 # Mark all base image packages as dependency so PackageKit only manages overlay packages
-dnf5.real mark dependency $(rpm -qa --qf '%{NAME} ')
+dnf5.real mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable 
 
 # Create dnf5 wrapper
 cat > /usr/bin/dnf5 << 'WRAPPER'
