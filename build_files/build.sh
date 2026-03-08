@@ -54,7 +54,7 @@ dnf5 -y install @fonts @hardware-support \
   scx-manager
 
 ## Remove packages
-dnf5 -y remove plasma-discover-offline-updates
+# dnf5 -y remove plasma-discover-offline-updates
 
 ## Remove Fedora Look and Feel
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
