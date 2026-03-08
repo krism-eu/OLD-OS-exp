@@ -34,32 +34,10 @@ cat > /usr/bin/dnf << 'WRAPPER'
 exec /usr/bin/dnf5 "$@"
 WRAPPER
 
-# Rename real rpm-ostree binary
-mv /usr/bin/rpm-ostree /usr/bin/rpm-ostree.real
-
-# Create rpm-ostree wrapper — routes install/remove through overlay, passes everything else through
-cat > /usr/bin/rpm-ostree << 'WRAPPER'
-#!/usr/bin/env bash
-COMMAND="${1:-}"
-case "$COMMAND" in
-    install)
-        shift
-        exec rakuos install "$@"
-        ;;
-    remove|uninstall)
-        shift
-        exec rakuos remove "$@"
-        ;;
-    *)
-        exec /usr/bin/rpm-ostree.real "$@"
-        ;;
-esac
-WRAPPER
-
 # Make all wrappers executable
-chmod +x /usr/bin/dnf5 /usr/bin/dnf /usr/bin/rpm-ostree
+chmod +x /usr/bin/dnf5 /usr/bin/dnf
 
 # Remove ostree boot condition from PackageKit so it starts on RakuOS
-sed -i '/ConditionPathExists=!\/run\/ostree-booted/d' /usr/lib/systemd/system/packagekit.service
+#sed -i '/ConditionPathExists=!\/run\/ostree-booted/d' /usr/lib/systemd/system/packagekit.service
 
 echo "RakuOS post-build complete."
