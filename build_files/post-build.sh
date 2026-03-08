@@ -7,7 +7,7 @@ mv /usr/bin/dnf5 /usr/bin/dnf5.real
 mv /usr/bin/dnf /usr/bin/dnf.real
 
 # Mark all base image packages as dependency so PackageKit only manages overlay packages
-dnf5.real -y mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable 
+dnf5.real -y mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable
 
 # Create dnf5 wrapper
 cat > /usr/bin/dnf5 << 'WRAPPER'
@@ -34,7 +34,32 @@ cat > /usr/bin/dnf << 'WRAPPER'
 exec /usr/bin/dnf5 "$@"
 WRAPPER
 
-# Make both executable
-chmod +x /usr/bin/dnf5 /usr/bin/dnf
+# Rename real rpm-ostree binary
+mv /usr/bin/rpm-ostree /usr/bin/rpm-ostree.real
 
-echo "RakuOS dnf/dnf5 wrappers installed successfully."
+# Create rpm-ostree wrapper — routes install/remove through overlay, passes everything else through
+cat > /usr/bin/rpm-ostree << 'WRAPPER'
+#!/usr/bin/env bash
+COMMAND="${1:-}"
+case "$COMMAND" in
+    install)
+        shift
+        exec rakuos install "$@"
+        ;;
+    remove|uninstall)
+        shift
+        exec rakuos remove "$@"
+        ;;
+    *)
+        exec /usr/bin/rpm-ostree.real "$@"
+        ;;
+esac
+WRAPPER
+
+# Make all wrappers executable
+chmod +x /usr/bin/dnf5 /usr/bin/dnf /usr/bin/rpm-ostree
+
+# Remove ostree boot condition from PackageKit so it starts on RakuOS
+sed -i '/ConditionPathExists=!\/run\/ostree-booted/d' /usr/lib/systemd/system/packagekit.service
+
+echo "RakuOS post-build complete."
