@@ -48,13 +48,13 @@ dnf5 -y install @fonts @hardware-support \
   ark \
   spectacle \
   plasma-discover \
-  plasma-discover-packagekit \
   plasma-systemmonitor \
   plasma-setup \
   scx-manager
 
 ## Remove packages
-# dnf5 -y remove plasma-discover-offline-updates
+dnf5 -y remove plasma-discover-offline-updates \
+  plasma-discover-packagekit
 
 ## Remove Fedora Look and Feel
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
