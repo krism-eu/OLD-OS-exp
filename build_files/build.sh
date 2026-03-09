@@ -50,6 +50,7 @@ dnf5 -y install @fonts @hardware-support \
   plasma-discover \
   plasma-systemmonitor \
   plasma-setup \
+  QtWebEngine \
   scx-manager
 
 ## Remove packages
