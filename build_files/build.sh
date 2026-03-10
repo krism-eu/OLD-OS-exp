@@ -26,8 +26,7 @@ dnf5 -y install @fonts @hardware-support \
   kde-gtk-config \
   kcm_systemd \
   kwalletmanager5 \
-  plasma-setup \
-  QtWebEngine
+  plasma-setup
 
 ## Remove packages
 dnf5 -y remove plasma-discover \
