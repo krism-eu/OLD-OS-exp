@@ -1,94 +1,57 @@
 #!/usr/bin/env bash
 # post-build-overlay.sh
-# Runs after the main image build.
-# Reads /usr/share/rakuos/packages.list and installs each package into
-# the image overlay using `rakuos install`, which is available by this
-# point in the build pipeline.
+# Runs inside the container build (Containerfile RUN step / GitHub Actions).
 #
-# Usage (from your Containerfile / build workflow):
+# Does NOT install packages — that's impossible inside a container build
+# because overlayfs on /usr requires CAP_SYS_ADMIN and a real kernel mount.
+#
+# Instead, this script seeds /var/lib/rakuos/ into a "post-reset" state:
+#   - packages.list populated from /usr/share/rakuos/packages.list
+#   - overlay upper/work dirs created and empty
+#   - overlay.state intentionally absent
+#
+# On first boot, rakuos-overlay-sync.service sees the missing state file,
+# treats it as a fresh/reset system, and performs a full install into the
+# overlay automatically — no user interaction needed.
+#
+# Usage (from your Containerfile):
 #   RUN /usr/libexec/rakuos/build/post-build-overlay.sh
-#
-# packages.list format — one package per line, blank lines and # comments ignored:
-#   firefox
-#   vlc
-#   # this is a comment
-#   steam
 
 set -euo pipefail
 
-PACKAGES_LIST="/usr/share/rakuos/packages.list"
+DEFAULT_PACKAGES_LIST="/usr/share/rakuos/packages.list"
+PACKAGES_LIST="/var/lib/rakuos/packages.list"
+UPPER_DIR="/var/lib/rakuos/overlay/upper"
+WORK_DIR="/var/lib/rakuos/overlay/work"
 STATE_FILE="/var/lib/rakuos/overlay.state"
-RAKUOS_BIN="/usr/bin/rakuos"
+DIRTY_FILE="/var/lib/rakuos/overlay.dirty"
 
-# ── Sanity checks ─────────────────────────────────────────────────────────────
+echo "[rakuos] Seeding overlay state for first-boot install..."
 
-if [[ ! -f "$PACKAGES_LIST" ]]; then
-    echo "[rakuos] No packages.list found at $PACKAGES_LIST — skipping overlay bake."
-    exit 0
+# ── Create runtime dirs ───────────────────────────────────────────────────────
+
+mkdir -p /var/lib/rakuos
+mkdir -p "$UPPER_DIR"
+mkdir -p "$WORK_DIR"
+
+# ── Seed packages.list ────────────────────────────────────────────────────────
+
+if [[ -f "$DEFAULT_PACKAGES_LIST" ]]; then
+    cp "$DEFAULT_PACKAGES_LIST" "$PACKAGES_LIST"
+    PKG_COUNT=$(grep -v '^\s*#' "$PACKAGES_LIST" | grep -v '^\s*$' | wc -l)
+    echo "[rakuos] packages.list seeded with $PKG_COUNT packages."
+else
+    echo "[rakuos] WARNING: No default packages.list at $DEFAULT_PACKAGES_LIST"
+    echo "[rakuos] Creating empty packages.list — no packages will be installed on first boot."
+    touch "$PACKAGES_LIST"
 fi
 
-if [[ ! -x "$RAKUOS_BIN" ]]; then
-    echo "[rakuos] ERROR: $RAKUOS_BIN not found or not executable."
-    echo "[rakuos] rakuos must be installed before running this script."
-    exit 1
-fi
+# ── Ensure state is absent (triggers full install on first boot) ──────────────
+# overlay-sync treats a missing STATE_FILE as "fresh/reset" and performs
+# a full install of everything in packages.list.
 
-# ── Parse packages.list ───────────────────────────────────────────────────────
+rm -f "$STATE_FILE"
+rm -f "$DIRTY_FILE"
 
-mapfile -t PACKAGES < <(
-    grep -v '^\s*#' "$PACKAGES_LIST" \
-    | grep -v '^\s*$' \
-    | sed 's/\s*#.*//' \
-    | tr -d '[:space:]'
-)
-
-if [[ ${#PACKAGES[@]} -eq 0 ]]; then
-    echo "[rakuos] packages.list is empty — nothing to install."
-    exit 0
-fi
-
-echo "[rakuos] Installing ${#PACKAGES[@]} packages from $PACKAGES_LIST ..."
-
-# ── Install via rakuos ────────────────────────────────────────────────────────
-
-FAILED=()
-
-for pkg in "${PACKAGES[@]}"; do
-    echo "[rakuos] Installing: $pkg"
-    if ! "$RAKUOS_BIN" install "$pkg"; then
-        echo "[rakuos] WARNING: Failed to install $pkg — continuing."
-        FAILED+=("$pkg")
-    fi
-done
-
-# ── Report failures ───────────────────────────────────────────────────────────
-
-if [[ ${#FAILED[@]} -gt 0 ]]; then
-    echo "[rakuos] WARNING: The following packages failed to install:"
-    printf '  - %s\n' "${FAILED[@]}"
-fi
-
-# ── Record what we baked in ───────────────────────────────────────────────────
-# The software center reads this to know which packages came from the
-# baked overlay vs user-installed ones.
-
-INSTALLED=()
-for pkg in "${PACKAGES[@]}"; do
-    if ! printf '%s\n' "${FAILED[@]}" | grep -qx "$pkg"; then
-        INSTALLED+=("$pkg")
-    fi
-done
-
-mkdir -p "$(dirname "$STATE_FILE")"
-{
-    echo "# RakuOS baked overlay — generated at build time"
-    echo "# $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-    printf '%s\n' "${INSTALLED[@]}"
-} > "$STATE_FILE"
-
-echo "[rakuos] Overlay bake complete — ${#INSTALLED[@]} packages installed."
-echo "[rakuos] State written to $STATE_FILE"
-
-if [[ ${#FAILED[@]} -gt 0 ]]; then
-    exit 1
-fi
+echo "[rakuos] overlay.state cleared — first boot will install all packages."
+echo "[rakuos] Post-build seed complete."
