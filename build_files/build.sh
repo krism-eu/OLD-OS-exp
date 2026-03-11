@@ -11,7 +11,6 @@ dnf5 -y install @fonts @hardware-support \
   plasma-browser-integration \
   kscreen \
   plasma-login-manager \
-  dolphin \
   kwin \
   kmenuedit \
   kinfocenter \
