@@ -18,6 +18,10 @@ case "$COMMAND" in
         shift
         exec rakuos install "$@"
         ;;
+    update)
+        shift
+        exec rakuos update "$@"
+        ;;
     remove|erase)
         shift
         exec rakuos remove "$@"
