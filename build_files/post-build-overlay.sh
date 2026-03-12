@@ -53,5 +53,8 @@ fi
 rm -f "$STATE_FILE"
 rm -f "$DIRTY_FILE"
 
+# Ensure packages.list ends with newline
+sed -i -e '$a\' /var/lib/rakuos/packages.list
+
 echo "[rakuos] overlay.state cleared — first boot will install all packages."
 echo "[rakuos] Post-build seed complete."
