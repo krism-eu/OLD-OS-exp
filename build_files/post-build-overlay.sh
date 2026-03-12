@@ -58,3 +58,6 @@ sed -i -e '$a\' /var/lib/rakuos/packages.list
 
 echo "[rakuos] overlay.state cleared — first boot will install all packages."
 echo "[rakuos] Post-build seed complete."
+
+echo "Generating base file manifest..."
+/usr/libexec/rakuos/generate-base-manifest
