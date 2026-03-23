@@ -30,7 +30,9 @@ dnf5 -y install @fonts @hardware-support \
 ## Remove packages
 dnf5 -y remove plasma-discover \
   plasma-discover-offline-updates \
-  plasma-discover-packagekit
+  plasma-discover-packagekit \
+  plasma-welcome \
+  plasma-welcome-fedora
 
 ## Remove Fedora Look and Feel
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
