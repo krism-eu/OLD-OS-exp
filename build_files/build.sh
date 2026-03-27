@@ -4,7 +4,7 @@ set -ouex pipefail
 FEDORA_VERSION="${FEDORA_VERSION:-43}"
 
 ## Install packages
-dnf5 -y install @fonts @hardware-support \
+dnf5.real -y install @fonts @hardware-support \
   plasma-desktop \
   plasma-workspace \
   plasma-workspace-wayland \
@@ -29,7 +29,7 @@ dnf5 -y install @fonts @hardware-support \
   rakuos-welcome-qt
 
 ## Remove packages
-dnf5 -y remove plasma-discover \
+dnf5.real -y remove plasma-discover \
   plasma-discover-offline-updates \
   plasma-discover-packagekit \
   plasma-welcome \
