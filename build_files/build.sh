@@ -26,7 +26,8 @@ dnf5.real -y install @fonts @hardware-support \
   kcm_systemd \
   kwalletmanager5 \
   plasma-setup \
-  rakuos-welcome-qt
+  rakuos-welcome-qt \
+  rakuos-software-qt
 
 ## Remove packages
 dnf5.real -y remove plasma-discover \
