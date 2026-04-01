@@ -59,5 +59,34 @@ sed -i -e '$a\' /var/lib/rakuos/packages.list
 echo "[rakuos] overlay.state cleared — first boot will install all packages."
 echo "[rakuos] Post-build seed complete."
 
+echo "Appending KDE protected packages to protected-packages.txt..."
+cat >> /usr/share/rakuos/protected-packages.txt << 'EOF'
+
+# KDE DE packages (from rakuos-kde/build_files/build.sh)
+plasma-desktop
+plasma-workspace
+plasma-workspace-wayland
+plasma-browser-integration
+kscreen
+plasma-login-manager
+kwin
+kmenuedit
+kinfocenter
+plasma-nm
+plasma-pa
+kdegraphics-thumbnailers
+breeze-icon-theme
+breeze-gtk
+bluedevil
+bluez
+bluez-obexd
+kde-gtk-config
+kcm_systemd
+kwalletmanager5
+plasma-setup
+rakuos-welcome-qt
+rakuos-software-qt
+EOF
+
 echo "Generating base file manifest..."
 /usr/libexec/rakuos/generate-base-manifest
