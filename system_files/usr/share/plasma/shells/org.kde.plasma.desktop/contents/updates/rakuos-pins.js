@@ -1,28 +1,27 @@
 const allPanels = panels();
 
 for (let i = 0; i < allPanels.length; ++i) {
-    const panel = allPanels[i];
-    const widgets = panel.widgets();
+  const panel = allPanels[i];
+  const widgets = panel.widgets();
 
-    for (let j = 0; j < widgets.length; ++j) {
-        const widget = widgets[j];
+  for (let j = 0; j < widgets.length; ++j) {
+    const widget = widgets[j];
 
-        if (widget.type === "org.kde.plasma.icontasks") {
-            widget.currentConfigGroup = ["General"];
+    if (widget.type === "org.kde.plasma.icontasks") {
+      widget.currentConfigGroup = ["General"];
 
-            // Read the current launchers value
-            const currentLaunchers = widget.readConfig("launchers", "");
+      // Read the current launchers value
+      const currentLaunchers = widget.readConfig("launchers", "");
 
-            // Only set our default if launchers is empty
-            if (!currentLaunchers || currentLaunchers.trim() === "") {
-                widget.writeConfig("launchers", [
-                    "preferred://browser",
-                    "preferred://filemanager",
-                    "applications:org.kde.konsole.desktop"
-                ]);
-                widget.reloadConfig();
-            }
-        }
+      // Only set our default if launchers is empty
+      if (!currentLaunchers || currentLaunchers.trim() === "") {
+        widget.writeConfig("launchers", [
+          "preferred://browser",
+          "preferred://filemanager",
+          "applications:systemsettings.desktop",
+        ]);
+        widget.reloadConfig();
+      }
     }
+  }
 }
-
