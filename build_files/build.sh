@@ -45,6 +45,9 @@ rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop
 rm /usr/share/wallpapers/Fedora
 rm -rf /usr/share/wallpapers/F43
 
+#KDE customizations
+sed -i '$r /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/rakuos-pins.js' /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
+
 ## Enable Services
 systemctl enable plasmalogin.service \
   plasma-setup.service
