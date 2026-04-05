@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -ouex pipefail
-FEDORA_VERSION="${FEDORA_VERSION:-43}"
+FEDORA_VERSION=$(rpm -E %fedora)
 
 ## Install packages
 dnf5.real -y install @fonts @hardware-support \
