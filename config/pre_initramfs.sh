@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
+FEDORA_VERSION=$(rpm -E %fedora)
 
-echo "Swapping Fedora kernel for CachyOS kernel..."
-dnf5 -y copr enable bieszczaders/kernel-cachyos
-dnf5 swap -y kernel kernel-cachyos
+echo "Preparing initramfs for RakuOS Linux Live Isos"

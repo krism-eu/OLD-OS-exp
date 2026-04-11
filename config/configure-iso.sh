@@ -1,2 +1,5 @@
-# Install Anaconda for installation
-dnf install -y anaconda-live libblockdev-btrfs
+# Install packages for installation
+dnf5 install -y libblockdev-btrfs
+
+#remove rakuos-welcome automatic launch for live environment
+rm -f /etc/xdg/autostart/rakuos-welcome.desktop
