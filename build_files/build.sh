@@ -27,7 +27,7 @@ dnf5.real -y install @fonts @hardware-support \
   kwalletmanager5 \
   rakuos-welcome-qt \
   rakuos-software-qt \
-  rakuos-initial-setup-qt
+  plasma-setup
 
 ## Remove packages
 dnf5.real -y remove plasma-discover \
@@ -49,4 +49,5 @@ rm -rf /usr/share/wallpapers/F43
 sed -i '$r /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/rakuos-pins.js' /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
 
 ## Enable Services
-systemctl enable plasmalogin.service
+systemctl enable plasmalogin.service \
+  plasma-setup.service
