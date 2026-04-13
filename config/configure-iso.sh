@@ -29,19 +29,19 @@ echo "Rakuos release $VERSION_ID ($VERSION_CODENAME)" >/etc/system-release
 # Get Artwork
 git clone --depth 1 --quiet https://github.com/RakuOS/rakuos-base.git /root/packages
 
-# # Installer icon
-# _icon=/root/packages/installer/branding/rakuos-installer.svg
-# _icon_symbol=/root/packages/installer/branding/rakuos-installer-symbolic.svg
-# if [[ -f $_icon ]]; then
-#     for f in \
-#         /usr/share/icons/hicolor/48x48/apps/org.fedoraproject.AnacondaInstaller.svg \
-#         /usr/share/icons/hicolor/scalable/apps/org.fedoraproject.AnacondaInstaller.svg; do
-#         cp "$_icon" "$f"
-#     done
-#     cp "$_icon_symbol" /usr/share/icons/hicolor/symbolic/apps/org.fedoraproject.AnacondaInstaller-symbolic.svg
-# fi
-# unset -v _icon
-# unset -v _icon_symbol
+# Installer icon
+_icon=/root/packages/installer/branding/rakuos-installer.svg
+_icon_symbol=/root/packages/installer/branding/rakuos-installer-symbolic.svg
+if [[ -f $_icon ]]; then
+    for f in \
+        /usr/share/icons/hicolor/48x48/apps/org.fedoraproject.AnacondaInstaller.svg \
+        /usr/share/icons/hicolor/scalable/apps/org.fedoraproject.AnacondaInstaller.svg; do
+        cp "$_icon" "$f"
+    done
+    cp "$_icon_symbol" /usr/share/icons/hicolor/symbolic/apps/org.fedoraproject.AnacondaInstaller-symbolic.svg
+fi
+unset -v _icon
+unset -v _icon_symbol
 
 # Default Kickstart
 cat <<EOF >>/usr/share/anaconda/interactive-defaults.ks
