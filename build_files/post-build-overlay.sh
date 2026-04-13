@@ -86,7 +86,6 @@ kwalletmanager5
 plasma-setup
 rakuos-welcome-qt
 rakuos-software-qt
-plasma-setup
 EOF
 
 echo "Generating base file manifest..."
