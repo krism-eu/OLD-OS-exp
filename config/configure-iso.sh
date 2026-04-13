@@ -192,6 +192,9 @@ if [[ "$desktop_env" == "gnome" ]]; then
 elif [[ "$desktop_env" == "kde" ]]; then
     echo "Copying KDE-specific system files..."
     cp -a /root/packages/installer/system_files/kde/. /
+elif [[ "$desktop_env" == "cosmic" ]]; then
+    echo "Copying cosmic-specific system files..."
+    cp -a /root/packages/installer/system_files/cosmic/. /
 fi
 
 # Change default pins for KDE
