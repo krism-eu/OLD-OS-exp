@@ -188,7 +188,7 @@ cp -af /root/packages/installer/system_files/shared/. /
 
 if [[ "$desktop_env" == "gnome" ]]; then
     echo "Copying GNOME-specific system files..."
-    cp -a /root/packages/system_files/gnome/. /
+    cp -a /root/packages/installer/system_files/gnome/. /
 elif [[ "$desktop_env" == "kde" ]]; then
     echo "Copying KDE-specific system files..."
     cp -a /root/packages/installer/system_files/kde/. /
