@@ -200,6 +200,11 @@ if [[ $desktop_env == kde ]]; then
     sed -i '$r /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/rakuos-pins.js' /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
 fi
 
+# Don't start the fedora-welcome app (gnome only)
+if [[ $desktop_env == gnome ]]; then
+    sed -i 's@\[Desktop Entry\]@\[Desktop Entry\]\nHidden=true@g' /usr/share/anaconda/gnome/org.fedoraproject.welcome-screen.desktop || :
+fi
+
 ###############################
 #remove rakuos-welcome automatic launch for live environment
 rm -f /etc/xdg/autostart/rakuos-welcome.desktop
