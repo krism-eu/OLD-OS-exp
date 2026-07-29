@@ -1,14 +1,5 @@
 {
   "software": {
-    "extraRepositories": [
-      {
-        "alias": "leapcustom",
-        "name": "Leap Custom Offline",
-        "url": "device://sda1/custom-repo",
-        "enabled": true,
-        "allowUnsigned": true
-      }
-    ],
     "packages": [
       "7zip",
       "aaa_base",
