@@ -34,8 +34,14 @@ RUN dnf -y \
     gwenview \
     spectacle \
     kinfocenter \
+    kdeplasma-addons \
+    okular \
+    kfind \
+    filelight \
+    kio-admin \
+    kate \
+    kwrite \
     kf6-sonnet-hunspell \
-    btop \
     fastfetch \
     openssh-server \
     hunspell-it \
