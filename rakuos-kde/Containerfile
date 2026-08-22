@@ -1,0 +1,64 @@
+FROM ghcr.io/krism-eu/rakuos-base:minimal-base
+
+RUN dnf -y \
+    --setopt=install_weak_deps=false \
+    --setopt=clean_requirements_on_remove=true \
+    install \
+    glibc-langpack-en \
+    glibc-langpack-it \
+    pipewire-alsa \
+    mt7xxx-firmware \
+    mesa-va-drivers \
+    plasma-desktop \
+    plasma-workspace \
+    plasma-login-manager \
+    kcm-plasmalogin \
+    kde-settings \
+    kde-settings-plasma \
+    kde-settings-plasmalogin \
+    kscreen \
+    powerdevil \
+    plasma-nm \
+    plasma-pa \
+    plasma-systemmonitor \
+    kde-gtk-config \
+    bluedevil \
+    kwalletmanager5 \
+    kio-fuse \
+    xdg-desktop-portal-kde \
+    xorg-x11-server-Xwayland \
+    dolphin \
+    dolphin-plugins \
+    konsole \
+    ark \
+    gwenview \
+    spectacle \
+    kinfocenter \
+    kf6-sonnet-hunspell \
+    btop \
+    fastfetch \
+    openssh-server \
+    hunspell-it \
+    unrar-free \
+    system-config-printer \
+    fzf \
+    bash-completion \
+    f44-backgrounds-base \
+    f44-backgrounds-kde \
+    && dnf clean all \
+    && rm -rf \
+        /var/cache/dnf \
+        /var/cache/libdnf5 \
+        /var/log/dnf5.log
+
+RUN systemctl set-default graphical.target
+RUN systemctl enable plasmalogin.service
+
+RUN bootc container lint
+
+LABEL org.opencontainers.image.title="RakuOS Plasma"
+LABEL org.opencontainers.image.description="Essential RakuOS KDE Plasma bootc image"
+LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
+LABEL org.opencontainers.image.version="0.1"
+
+CMD ["/sbin/init"]

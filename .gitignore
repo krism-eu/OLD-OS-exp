@@ -1,0 +1,4 @@
+analysis-full/
+*.log
+*.tmp
+Containerfile.before-*
