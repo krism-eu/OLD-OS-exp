@@ -15,6 +15,7 @@ dnf5 -y copr enable \
 # Install only packages not already provided by
 # ghcr.io/krism-eu/rakuos-base:kde.
 dnf5 -y install \
+  amd-gpu-firmware \
   plasma-browser-integration \
   kdegraphics-thumbnailers \
   kcm_systemd \
