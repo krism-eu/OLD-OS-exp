@@ -1,40 +1,40 @@
-FROM ghcr.io/krism-eu/rakuos-base:minimal-base
+ARG FEDORA_VERSION=44
+
+FROM quay.io/bootc-devel/fedora-bootc-44-minimal
+
+LABEL org.opencontainers.image.title="RakuOS Base"
+LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
+LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
+
+COPY system_files /
 
 RUN dnf -y \
-    --setopt=install_weak_deps=false \
-    install \
-    @kde-desktop-environment \
-    plasma-login-manager \
-    plasma-nm \
-    plasma-pa \
-    plasma-disks \
-    plasma-systemmonitor \
-    dolphin \
-    konsole \
-    kate \
-    ark \
-    spectacle \
-    kde-connect \
-    kde-gtk-config \
-    kscreen \
-    xdg-desktop-portal-kde \
-    qt6-qtwayland \
-    mesa-dri-drivers \
-    vulkan-loader \
+        --setopt=install_weak_deps=false \
+        install \
+        NetworkManager \
+        udisks2 \
+        linux-firmware \
+        glibc-langpack-en \
+        glibc-langpack-it \
+        pipewire \
+        pipewire-alsa \
+        pipewire-pulseaudio \
+        wireplumber \
+        mt7xxx-firmware \
+        mesa-vulkan-drivers \
+        mesa-va-drivers \
+        podman \
+        bash-completion \
+        fzf \
+        openssh-server \
     && dnf clean all \
-    && rm -rf \
-        /var/cache/dnf \
-        /var/cache/libdnf5 \
-        /var/log/dnf5.log
+    && rm -rf /var/cache/dnf
 
 RUN systemctl set-default graphical.target
-RUN systemctl enable plasmalogin.service
+
+COPY build_files/validate.sh /usr/local/libexec/rakuos-base-validate
+RUN chmod 0755 /usr/local/libexec/rakuos-base-validate
+
+RUN /usr/local/libexec/rakuos-base-validate
 
 RUN bootc container lint
-
-LABEL org.opencontainers.image.title="RakuOS KDE"
-LABEL org.opencontainers.image.description="RakuOS KDE Plasma 6.6 image based on the GHCR bootc base"
-LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
-LABEL org.opencontainers.image.version="0.1"
-
-CMD ["/sbin/init"]
