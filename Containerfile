@@ -1,13 +1,10 @@
-ARG FEDORA_VERSION="${FEDORA_VERSION:-43}"
-ENV FEDORA_VERSION=${FEDORA_VERSION}
-ARG BASE_IMAGE_TAG="${BASE_IMAGE_TAG:-latest}"
-ENV BASE_IMAGE_TAG=${BASE_IMAGE_TAG}
+ARG FEDORA_VERSION=44
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 COPY build_files /
 
 # Base Image
-FROM ghcr.io/rakuos/rakuos-base:${BASE_IMAGE_TAG}
+FROM ghcr.io/krism-eu/rakuos-base:kde
 COPY system_files /
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
