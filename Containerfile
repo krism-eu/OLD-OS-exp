@@ -6,7 +6,6 @@ LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
-COPY system_files /
 
 RUN dnf -y \
         --setopt=install_weak_deps=false \
