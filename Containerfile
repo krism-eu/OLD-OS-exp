@@ -1,9 +1,9 @@
 ARG FEDORA_VERSION=44
 
-FROM quay.io/bootc-devel/fedora-bootc-44-minimal
+FROM ghcr.io/krism-eu/rakuos-base:minimal-base
 
 LABEL org.opencontainers.image.title="RakuOS Base"
-LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
+LABEL org.opencontainers.image.description="Minimal Rakuos base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
 COPY system_files /
