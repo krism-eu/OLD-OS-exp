@@ -4,9 +4,8 @@ FROM quay.io/bootc-devel/fedora-bootc-44-minimal
 
 LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
-LABEL org.opencontainers.image.source="https://github.com/TUO_UTENTE/rakuos-base"
+LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
-COPY system_files /
 
 RUN dnf -y \
         --setopt=install_weak_deps=false \
