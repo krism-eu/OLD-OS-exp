@@ -9,9 +9,9 @@ COPY system_files /
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=tmpfs,dst=/tmp \
-    bash /ctx/build.sh && \
-    bash /ctx/post-build.sh && \
-    bash /ctx/post-build-overlay.sh
+    bash -x /ctx/build.sh && \
+    bash -x /ctx/post-build.sh && \
+    bash -x /ctx/post-build-overlay.sh
 
 RUN bootc container lint
 
