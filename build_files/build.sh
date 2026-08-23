@@ -16,6 +16,7 @@ dnf5 -y copr enable \
 # ghcr.io/krism-eu/rakuos-base:kde.
 dnf5 -y install \
   amd-gpu-firmware \
+  fish \
   plasma-browser-integration \
   kdegraphics-thumbnailers \
   kcm_systemd \
@@ -42,6 +43,24 @@ done
 if ((${#INSTALLED_REMOVE_PACKAGES[@]})); then
   dnf5 -y remove --no-autoremove \
     "${INSTALLED_REMOVE_PACKAGES[@]}"
+fi
+
+
+# Validate required RakuOS KDE components.
+for required_file in \
+  /usr/bin/rakuos \
+  /usr/libexec/rakuos/rakuos-install \
+  /usr/libexec/rakuos/software/rakuos-software-qt
+do
+  if [[ ! -x "$required_file" ]]; then
+    echo "ERROR: missing required executable: $required_file" >&2
+    exit 1
+  fi
+done
+
+if ! /usr/bin/python3 -c 'import encodings' >/dev/null 2>&1; then
+  echo "ERROR: system Python cannot import encodings" >&2
+  exit 1
 fi
 
 # Remove optional Game Controller KCM because SDL2 is intentionally not installed.

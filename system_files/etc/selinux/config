@@ -1,0 +1,3 @@
+# RakuOS KDE configuration
+SELINUX=disabled
+SELINUXTYPE=targeted
