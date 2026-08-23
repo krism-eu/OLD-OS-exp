@@ -77,7 +77,13 @@ PINS_FILE="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/raku
 LAYOUT_FILE="/usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js"
 
 if [[ -f "$PINS_FILE" && -f "$LAYOUT_FILE" ]]; then
-  sed -i -e "$r $PINS_FILE" "$LAYOUT_FILE"
+  TMP_LAYOUT="$(mktemp)"
+  cat "$LAYOUT_FILE" > "$TMP_LAYOUT"
+  cat "$PINS_FILE" >> "$TMP_LAYOUT"
+  cat "$TMP_LAYOUT" > "$LAYOUT_FILE"
+  rm -f "$TMP_LAYOUT"
+else
+  echo "WARNING: RakuOS Plasma pins or layout file not found"
 fi
 
 systemctl enable plasmalogin.service 2>/dev/null || true
