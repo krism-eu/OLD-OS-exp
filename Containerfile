@@ -28,16 +28,10 @@ RUN dnf -y \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
-COPY system_files /
 
-RUN find /usr/libexec/rakuos -type f -exec chmod 0755 {} \; 2>/dev/null || true
-RUN chmod 0755 /usr/bin/rakuos 2>/dev/null || true
 
 RUN systemctl set-default graphical.target
 
-COPY build_files/validate.sh /usr/local/libexec/rakuos-base-validate
-RUN chmod 0755 /usr/local/libexec/rakuos-base-validate
 
-RUN /usr/local/libexec/rakuos-base-validate
 
 RUN bootc container lint
