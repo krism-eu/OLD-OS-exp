@@ -44,6 +44,9 @@ if ((${#INSTALLED_REMOVE_PACKAGES[@]})); then
     "${INSTALLED_REMOVE_PACKAGES[@]}"
 fi
 
+# Remove optional Game Controller KCM because SDL2 is intentionally not installed.
+rm -f /usr/lib64/qt6/plugins/plasma/kcms/systemsettings/kcm_gamecontroller.so
+
 # Remove Fedora Look and Feel packages.
 rm -rf \
   /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop \
