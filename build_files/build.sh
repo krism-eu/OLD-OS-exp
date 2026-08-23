@@ -59,8 +59,13 @@ for required_file in \
   /usr/libexec/rakuos/rakuos-install \
   /usr/libexec/rakuos/software/rakuos-software-qt
 do
+  if [[ ! -e "$required_file" ]]; then
+    echo "ERROR: missing required RakuOS path: $required_file" >&2
+    exit 1
+  fi
+
   if [[ ! -x "$required_file" ]]; then
-    echo "ERROR: missing required executable: $required_file" >&2
+    echo "ERROR: RakuOS path is not executable: $required_file" >&2
     exit 1
   fi
 done
