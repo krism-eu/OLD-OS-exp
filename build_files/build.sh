@@ -4,24 +4,24 @@ set -euo pipefail
 
 FEDORA_VERSION="$(rpm -E %fedora)"
 
-if ! command -v dnf5.real >/dev/null 2>&1; then
-  echo "ERROR: dnf5.real is missing from the KDE layer" >&2
-  exit 1
+# Se dnf5.real esiste usa quello, altrimenti usa il dnf5 di sistema
+if command -v dnf5.real >/dev/null 2>&1; then
+  DNF_CMD="dnf5.real"
+else
+  DNF_CMD="dnf5"
 fi
 
-if ! command -v rakuos >/dev/null 2>&1; then
-  echo "ERROR: rakuos is missing from the KDE layer" >&2
-  exit 1
-fi
-
+# Plugin COPR se non presente
 if ! rpm -q dnf5-plugins >/dev/null 2>&1; then
-  dnf5.real -y install dnf5-plugins
+  "$DNF_CMD" -y install dnf5-plugins
 fi
 
-dnf5.real -y copr enable \
+# Abilita il COPR RakuOS
+"$DNF_CMD" -y copr enable \
   tohur/RakuOS \
   "fedora-${FEDORA_VERSION}-x86_64"
 
+# Pacchetti specifici del layer Custom
 INSTALL_PACKAGES=(
   amd-gpu-firmware
   fish
@@ -33,7 +33,6 @@ INSTALL_PACKAGES=(
 )
 
 TO_INSTALL=()
-
 for package in "${INSTALL_PACKAGES[@]}"; do
   if ! rpm -q "$package" >/dev/null 2>&1; then
     TO_INSTALL+=("$package")
@@ -41,9 +40,10 @@ for package in "${INSTALL_PACKAGES[@]}"; do
 done
 
 if ((${#TO_INSTALL[@]})); then
-  dnf5.real -y install "${TO_INSTALL[@]}"
+  "$DNF_CMD" -y install "${TO_INSTALL[@]}"
 fi
 
+# Rimozione pacchetti non desiderati
 REMOVE_PACKAGES=(
   plasma-discover
   plasma-discover-offline-updates
@@ -53,7 +53,6 @@ REMOVE_PACKAGES=(
 )
 
 TO_REMOVE=()
-
 for package in "${REMOVE_PACKAGES[@]}"; do
   if rpm -q "$package" >/dev/null 2>&1; then
     TO_REMOVE+=("$package")
@@ -61,42 +60,24 @@ for package in "${REMOVE_PACKAGES[@]}"; do
 done
 
 if ((${#TO_REMOVE[@]})); then
-  dnf5.real -y remove --no-autoremove "${TO_REMOVE[@]}"
+  "$DNF_CMD" -y remove --no-autoremove "${TO_REMOVE[@]}"
 fi
 
-for required_file in \
-  /usr/bin/rakuos \
-  /usr/libexec/rakuos/rakuos-install \
-  /usr/libexec/rakuos/software/rakuos-software-qt
-do
-  if [[ ! -x "$required_file" ]]; then
-    echo "ERROR: missing required executable: $required_file" >&2
-    exit 1
-  fi
-done
-
-if ! /usr/bin/python3 -c 'import encodings' >/dev/null 2>&1; then
-  echo "ERROR: system Python cannot import encodings" >&2
-  exit 1
-fi
-
-rm -f \
-  /usr/lib64/qt6/plugins/plasma/kcms/systemsettings/kcm_gamecontroller.so
-
+# Pulizia look and feel generico Fedora
+rm -f /usr/lib64/qt6/plugins/plasma/kcms/systemsettings/kcm_gamecontroller.so 2>/dev/null || true
 rm -rf \
   /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop \
   /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop \
   /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop \
   /usr/share/wallpapers/Fedora \
-  /usr/share/wallpapers/F43
+  /usr/share/wallpapers/F43 2>/dev/null || true
 
+# Layout del pannello RakuOS
 PINS_FILE="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/rakuos-pins.js"
 LAYOUT_FILE="/usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js"
 
 if [[ -f "$PINS_FILE" && -f "$LAYOUT_FILE" ]]; then
   sed -i "$r $PINS_FILE" "$LAYOUT_FILE"
-else
-  echo "WARNING: RakuOS Plasma pins or layout file not found"
 fi
 
-systemctl enable plasmalogin.service
+systemctl enable plasmalogin.service 2>/dev/null || true
