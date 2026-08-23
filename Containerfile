@@ -6,7 +6,6 @@ LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
-
 RUN dnf -y \
         --setopt=install_weak_deps=false \
         install \
@@ -28,6 +27,11 @@ RUN dnf -y \
         openssh-server \
     && dnf clean all \
     && rm -rf /var/cache/dnf
+
+COPY system_files /
+
+RUN find /usr/libexec/rakuos -type f -exec chmod 0755 {} \; 2>/dev/null || true
+RUN chmod 0755 /usr/bin/rakuos 2>/dev/null || true
 
 RUN systemctl set-default graphical.target
 
