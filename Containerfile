@@ -6,7 +6,7 @@ LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
-RUN dnf -y \
+RUN dnf5 -y \
         --setopt=install_weak_deps=false \
         install \
         NetworkManager \
@@ -25,13 +25,14 @@ RUN dnf -y \
         bash-completion \
         fzf \
         openssh-server \
-    && dnf clean all \
-    && rm -rf /var/cache/dnf
-
-
+    && dnf5 clean all \
+    && rm -rf \
+        /var/cache/dnf \
+        /var/cache/libdnf5 \
+        /var/log/dnf5.log \
+        /run/dnf \
+        /run/mdadm
 
 RUN systemctl set-default graphical.target
-
-
 
 RUN bootc container lint
