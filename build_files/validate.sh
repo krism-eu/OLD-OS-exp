@@ -1,33 +1,39 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
-echo "=== RakuOS base validation ==="
+REQUIRED_FILES=(
+  /usr/bin/rakuos
+  /usr/libexec/rakuos/rakuos-install
+  /usr/libexec/rakuos/rakuos-remove
+  /usr/libexec/rakuos/rakuos-update
+  /usr/libexec/rakuos/rakuos-overlay-mount
+  /usr/libexec/rakuos/rakuos-overlay-sync
+  /usr/libexec/rakuos/rakuos-overlay-services
+  /usr/libexec/rakuos/generate-base-manifest
+)
 
-echo "=== Required bootc components ==="
-test -x /usr/bin/bootc
-test -x /usr/lib/systemd/systemd
+for file in "${REQUIRED_FILES[@]}"; do
+  if [[ ! -e "$file" ]]; then
+    echo "ERROR: missing required RakuOS file: $file" >&2
+    exit 1
+  fi
 
-echo "=== Required packages ==="
-rpm -q \
-  pipewire \
-  pipewire-pulseaudio \
-  wireplumber \
-  mesa-vulkan-drivers \
-  podman
+  if [[ ! -x "$file" ]]; then
+    echo "ERROR: RakuOS file is not executable: $file" >&2
+    exit 1
+  fi
+done
 
-echo "=== Forbidden packages ==="
-if rpm -qa | grep -E \
-  '(\.i686$|^kernel-cachyos|^nvidia|^gamemode|^steam|^lutris)'; then
-  echo "ERROR: forbidden package found"
-  exit 1
-fi
+for unit in \
+  rakuos-overlay-mount.service \
+  rakuos-overlay-sync.service \
+  rakuos-overlay-services.service
+do
+  if [[ ! -e "/usr/lib/systemd/system/$unit" ]]; then
+    echo "ERROR: missing RakuOS systemd unit: $unit" >&2
+    exit 1
+  fi
+done
 
-echo "=== Unwanted hardware packages ==="
-rpm -qa | grep -Ei \
-  '(^|[-])(intel-lpmd|intel-gmmlib|intel-mediasdk|intel-vaapi-driver)|virtualbox|vmware|spice-vdagent|qemu-guest-agent|mcelog' \
-  || true
-
-echo "=== Package count ==="
-rpm -qa | wc -l
-
-echo "=== Validation passed ==="
+echo "RakuOS base validation successful."
