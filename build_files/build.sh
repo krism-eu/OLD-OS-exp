@@ -4,11 +4,21 @@ set -euo pipefail
 
 FEDORA_VERSION="$(rpm -E %fedora)"
 
-if ! rpm -q dnf5-plugins >/dev/null 2>&1; then
-  dnf5 -y install dnf5-plugins
+if ! command -v dnf5.real >/dev/null 2>&1; then
+  echo "ERROR: dnf5.real is missing from the KDE layer" >&2
+  exit 1
 fi
 
-dnf5 -y copr enable \
+if ! command -v rakuos >/dev/null 2>&1; then
+  echo "ERROR: rakuos is missing from the KDE layer" >&2
+  exit 1
+fi
+
+if ! rpm -q dnf5-plugins >/dev/null 2>&1; then
+  dnf5.real -y install dnf5-plugins
+fi
+
+dnf5.real -y copr enable \
   tohur/RakuOS \
   "fedora-${FEDORA_VERSION}-x86_64"
 
@@ -31,7 +41,7 @@ for package in "${INSTALL_PACKAGES[@]}"; do
 done
 
 if ((${#TO_INSTALL[@]})); then
-  dnf5 -y install "${TO_INSTALL[@]}"
+  dnf5.real -y install "${TO_INSTALL[@]}"
 fi
 
 REMOVE_PACKAGES=(
@@ -51,7 +61,7 @@ for package in "${REMOVE_PACKAGES[@]}"; do
 done
 
 if ((${#TO_REMOVE[@]})); then
-  dnf5 -y remove --no-autoremove "${TO_REMOVE[@]}"
+  dnf5.real -y remove --no-autoremove "${TO_REMOVE[@]}"
 fi
 
 for required_file in \
@@ -84,7 +94,7 @@ PINS_FILE="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/raku
 LAYOUT_FILE="/usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js"
 
 if [[ -f "$PINS_FILE" && -f "$LAYOUT_FILE" ]]; then
-  sed -i "\$r $PINS_FILE" "$LAYOUT_FILE"
+  sed -i "$r $PINS_FILE" "$LAYOUT_FILE"
 else
   echo "WARNING: RakuOS Plasma pins or layout file not found"
 fi
