@@ -1,14 +1,20 @@
-FROM ghcr.io/krism-eu/rakuos-base:minimal-base
+FROM ghcr.io/krism-eu/rakuos-base:minimal-base AS minimal
 
-RUN dnf -y \
+FROM ghcr.io/rakuos/rakuos-base:latest AS rakuos-runtime
+
+FROM minimal
+
+COPY --from=rakuos-runtime /usr/bin/rakuos /usr/bin/rakuos
+COPY --from=rakuos-runtime /usr/libexec/rakuos /usr/libexec/rakuos
+COPY --from=rakuos-runtime /usr/lib/systemd/system/rakuos-*.service /usr/lib/systemd/system/
+COPY --from=rakuos-runtime /usr/lib/systemd/user/rakuos-user.service /usr/lib/systemd/user/
+COPY --from=rakuos-runtime /usr/lib/tmpfiles.d/rakuos-*.conf /usr/lib/tmpfiles.d/
+COPY --from=rakuos-runtime /usr/share/rakuos /usr/share/rakuos
+
+RUN dnf5 -y \
     --setopt=install_weak_deps=false \
     --setopt=clean_requirements_on_remove=true \
     install \
-    glibc-langpack-en \
-    glibc-langpack-it \
-    pipewire-alsa \
-    mt7xxx-firmware \
-    mesa-va-drivers \
     plasma-desktop \
     plasma-workspace \
     plasma-login-manager \
@@ -43,28 +49,31 @@ RUN dnf -y \
     kwrite \
     kf6-sonnet-hunspell \
     fastfetch \
-    openssh-server \
     hunspell-it \
     unrar-free \
     system-config-printer \
-    fzf \
-    bash-completion \
     f44-backgrounds-base \
     f44-backgrounds-kde \
-    && dnf clean all \
+    && dnf5 clean all \
     && rm -rf \
         /var/cache/dnf \
         /var/cache/libdnf5 \
-        /var/log/dnf5.log
+        /var/log/dnf5.log \
+        /run/dnf \
+        /run/mdadm
+
+RUN test -x /usr/bin/rakuos
+RUN test -x /usr/libexec/rakuos/rakuos-install
+RUN test -x /usr/libexec/rakuos/rakuos-overlay-sync
+RUN test -x /usr/libexec/rakuos/generate-base-manifest
 
 RUN systemctl set-default graphical.target
 RUN systemctl enable plasmalogin.service
 
 RUN bootc container lint
 
-LABEL org.opencontainers.image.title="RakuOS Plasma"
-LABEL org.opencontainers.image.description="Essential RakuOS KDE Plasma bootc image"
+LABEL org.opencontainers.image.title="RakuOS KDE Plasma"
+LABEL org.opencontainers.image.description="RakuOS KDE Plasma image"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
-LABEL org.opencontainers.image.version="0.1"
 
 CMD ["/sbin/init"]
