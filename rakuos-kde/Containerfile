@@ -4,7 +4,15 @@ LABEL org.opencontainers.image.title="RakuOS KDE Plasma"
 LABEL org.opencontainers.image.description="RakuOS KDE Plasma image"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
-COPY system_files /
+COPY system_files/usr/bin/rakuos \
+     /usr/bin/rakuos
+
+COPY system_files/usr/bin/rum \
+     /usr/bin/rum
+
+COPY system_files/usr/libexec/rakuos/ \
+     /usr/libexec/rakuos/
+
 COPY rakuos-kde/build_files /build_files
 COPY rakuos-kde/system_files /
 
