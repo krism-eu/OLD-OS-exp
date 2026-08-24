@@ -11,7 +11,8 @@ RUN chmod +x \
         /build_files/build.sh \
         /build_files/drivers.sh \
         /build_files/post-build-overlay.sh \
-        /build_files/validate.sh
+        /build_files/validate.sh \
+        /usr/libexec/rakuos/generate-base-manifest
 
 RUN /usr/bin/env bash /build_files/build.sh
 
