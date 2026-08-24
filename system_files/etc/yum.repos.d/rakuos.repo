@@ -1,0 +1,5 @@
+[rakuos]
+name=RakuOS Fedora 44
+baseurl=https://repo.rakuos.org/rakuos/44/
+enabled=1
+gpgcheck=0
