@@ -14,7 +14,7 @@ RUN chmod +x \
         /build_files/post-build-overlay.sh \
         /build_files/validate.sh \
         /usr/libexec/rakuos/generate-base-manifest
-
+        /usr/bin/rakuos
 RUN /usr/bin/env bash /build_files/build.sh
 
 RUN /usr/bin/env bash /build_files/post-build-overlay.sh
