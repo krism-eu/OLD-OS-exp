@@ -5,8 +5,14 @@ FROM quay.io/bootc-devel/fedora-bootc-${FEDORA_VERSION}-minimal
 LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
+
 COPY system_files/etc/yum.repos.d/rakuos.repo \
      /etc/yum.repos.d/rakuos.repo
+
+COPY build_files /build_files
+
+RUN chmod +x /build_files/post-build.sh
+
 RUN dnf5 -y \
         --setopt=install_weak_deps=false \
         install \
@@ -27,16 +33,17 @@ RUN dnf5 -y \
         fzf \
         openssh-server \
         rakuos-rum \
-        rum-dnf-shim \
-    && dnf5 clean all \
-    && rm -rf \
-        /var/cache/dnf \
-        /var/cache/libdnf5 \
-        /var/log/dnf5.log \
-        /run/dnf \
-        /run/mdadm
+        rum-dnf-shim
 
-RUN systemctl set-default graphical.target
+RUN /usr/bin/env bash /build_files/post-build.sh
+
+RUN dnf5.real clean all \
+ && rm -rf \
+      /var/cache/dnf \
+      /var/cache/libdnf5 \
+      /var/log/dnf5.log \
+      /run/dnf \
+      /run/mdadm
 
 RUN bootc container lint
 
