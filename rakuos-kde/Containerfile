@@ -4,14 +4,9 @@ LABEL org.opencontainers.image.title="RakuOS KDE Plasma"
 LABEL org.opencontainers.image.description="RakuOS KDE Plasma image"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
+COPY system_files /
 COPY rakuos-kde/build_files /build_files
 COPY rakuos-kde/system_files /
-
-COPY system_files/usr/bin/rakuos \
-     /usr/bin/rakuos
-
-COPY system_files/usr/libexec/rakuos/generate-base-manifest \
-     /usr/libexec/rakuos/generate-base-manifest
 
 RUN chmod +x \
         /build_files/build.sh \
@@ -19,7 +14,8 @@ RUN chmod +x \
         /build_files/post-build-overlay.sh \
         /build_files/validate.sh \
         /usr/bin/rakuos \
-        /usr/libexec/rakuos/generate-base-manifest
+        /usr/bin/rum \
+        /usr/libexec/rakuos/*
 
 RUN /usr/bin/env bash /build_files/build.sh
 
