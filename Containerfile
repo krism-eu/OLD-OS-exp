@@ -1,6 +1,6 @@
 ARG FEDORA_VERSION=44
 
-FROM quay.io/bootc-devel/fedora-bootc-44-minimal
+FROM quay.io/bootc-devel/fedora-bootc-${FEDORA_VERSION}-minimal
 
 LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
@@ -25,6 +25,8 @@ RUN dnf5 -y \
         bash-completion \
         fzf \
         openssh-server \
+        rakuos-rum \
+        rum-dnf-shim \
     && dnf5 clean all \
     && rm -rf \
         /var/cache/dnf \
@@ -36,3 +38,7 @@ RUN dnf5 -y \
 RUN systemctl set-default graphical.target
 
 RUN bootc container lint
+
+LABEL org.opencontainers.image.version="0.1"
+
+CMD ["/sbin/init"]
