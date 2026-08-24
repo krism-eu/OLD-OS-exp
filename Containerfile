@@ -5,7 +5,8 @@ FROM quay.io/bootc-devel/fedora-bootc-${FEDORA_VERSION}-minimal
 LABEL org.opencontainers.image.title="RakuOS Base"
 LABEL org.opencontainers.image.description="Minimal Fedora bootc base for RakuOS"
 LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
-
+COPY system_files/etc/yum.repos.d/rakuos.repo \
+     /etc/yum.repos.d/rakuos.repo
 RUN dnf5 -y \
         --setopt=install_weak_deps=false \
         install \
@@ -25,6 +26,8 @@ RUN dnf5 -y \
         bash-completion \
         fzf \
         openssh-server \
+        rakuos-rum \
+        rum-dnf-shim \
     && dnf5 clean all \
     && rm -rf \
         /var/cache/dnf \
