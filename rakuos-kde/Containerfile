@@ -6,7 +6,8 @@ LABEL org.opencontainers.image.source="https://github.com/krism-eu/rakuos-base"
 
 COPY rakuos-kde/build_files /build_files
 COPY rakuos-kde/system_files /
-
+COPY system_files/usr/libexec/rakuos/generate-base-manifest \
+     /usr/libexec/rakuos/generate-base-manifest
 RUN chmod +x \
         /build_files/build.sh \
         /build_files/drivers.sh \
