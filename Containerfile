@@ -25,8 +25,6 @@ RUN dnf5 -y \
         bash-completion \
         fzf \
         openssh-server \
-        rakuos-rum \
-        rum-dnf-shim \
     && dnf5 clean all \
     && rm -rf \
         /var/cache/dnf \
