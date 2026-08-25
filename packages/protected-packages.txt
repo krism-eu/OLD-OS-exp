@@ -1,0 +1,3 @@
+# Manifest protetto della variante
+# Deve essere derivato da base RakuOS + KDE realmente presenti.
+# Non copiare automaticamente la lista completa di rakuos-kde.

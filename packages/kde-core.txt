@@ -1,0 +1,2 @@
+# KDE core — da completare dopo il confronto con rakuos-kde
+# Inserire un pacchetto per riga.
