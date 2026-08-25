@@ -1,40 +1,27 @@
-# ------------------------------------------------------------
-# 6. kde/build_files/post-build-overlay.sh (REV 2)
-# ------------------------------------------------------------
-cat > rakufinal/kde/build_files/post-build-overlay.sh << 'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
+# Base RakuOS
+flatpak
+podman
+distrobox
+podman-compose
+libxcrypt-compat
+rsync
+fuse
+squashfuse
+sqlite3
+openssl
+libnotify
+inotify-tools
+unzip
+appstream
+appstream-data
+fwupd
+fedora-logos
 
-DEFAULT_PACKAGES_LIST="/usr/share/rakuos/packages.list"
-PACKAGES_LIST="/var/lib/rakuos/packages.list"
-UPPER_DIR="/var/lib/rakuos/overlay/upper"
-WORK_DIR="/var/lib/rakuos/overlay/work"
-STATE_FILE="/var/lib/rakuos/overlay.state"
-DIRTY_FILE="/var/lib/rakuos/overlay.dirty"
-
-echo "[rakuos] Seeding overlay state for first-boot install..."
-
-mkdir -p /var/lib/rakuos "$UPPER_DIR" "$WORK_DIR"
-
-if [[ -f "$DEFAULT_PACKAGES_LIST" ]]; then
-    cp "$DEFAULT_PACKAGES_LIST" "$PACKAGES_LIST"
-    PKG_COUNT=$(grep -v '^\s*#' "$PACKAGES_LIST" | grep -v '^\s*$' | wc -l)
-    echo "[rakuos] packages.list seeded with $PKG_COUNT packages."
-else
-    echo "[rakuos] WARNING: No default packages.list at $DEFAULT_PACKAGES_LIST"
-    touch "$PACKAGES_LIST"
-fi
-
-rm -f "$STATE_FILE" "$DIRTY_FILE"
-
-echo "[rakuos] overlay.state cleared — first boot will install all packages."
-echo "[rakuos] Post-build seed complete."
-
-cat >> /usr/share/rakuos/protected-packages.txt << 'EOF'
-
-# KDE DE packages
+# KDE
 plasma-desktop
 plasma-workspace
+plasma-workspace-wayland
+plasma-browser-integration
 kscreen
 powerdevil
 plasma-nm
@@ -52,18 +39,16 @@ kde-settings-plasma
 kwalletmanager5
 kio-fuse
 kdegraphics-thumbnailers
-kcalc
-skanpage
-kompare
 plasma-login-manager
 kcm-plasmalogin
 kde-settings-plasmalogin
 xdg-desktop-portal-kde
 xorg-x11-server-Xwayland
+
+# Applicazioni
 dolphin
 dolphin-plugins
 kate
-kwrite
 konsole
 ark
 gwenview
@@ -75,34 +60,29 @@ kinfocenter
 kio-admin
 kde-partitionmanager
 kf6-sonnet-hunspell
+
+# Utility richieste
 btop
 fastfetch
 openssh-server
 hunspell-it
 unrar-free
-system-config-printer
 fzf
 bash-completion
-grsync
-f44-backgrounds-base
-f44-backgrounds-kde
+rclone
 snapper
 btrfs-assistant
 btrfsmaintenance
-rclone
 pipewire
-pipewire-alsa
-pipewire-pulseaudio
 wireplumber
 mt7xxx-firmware
 mesa-vulkan-drivers
 mesa-va-drivers
 glibc-langpack-en
 glibc-langpack-it
-bluez
-bluez-obexd
-EOF
 
-echo "Generating base file manifest..."
-/usr/libexec/rakuos/generate-base-manifest
-EOF
+# Virtualizzazione host
+qemu-kvm
+libvirt
+virt-install
+virt-manager

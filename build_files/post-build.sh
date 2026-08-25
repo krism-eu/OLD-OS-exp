@@ -1,64 +1,27 @@
 #!/usr/bin/env bash
-set -ouex pipefail
+set -euo pipefail
 
-mv /usr/bin/dnf5 /usr/bin/dnf5.real
-mv /usr/bin/dnf /usr/bin/dnf.real
+DNF="$(command -v dnf5.real 2>/dev/null || command -v dnf5)"
 
-dnf5.real -y mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable
-
-cat > /usr/bin/dnf5 << 'WRAPPER'
-#!/usr/bin/env bash
-COMMAND="${1:-}"
-case "$COMMAND" in
-    install)
-        shift
-        exec rakuos install "$@"
-        ;;
-    update)
-        shift
-        exec rakuos update "$@"
-        ;;
-    remove|erase)
-        shift
-        exec rakuos remove "$@"
-        ;;
-    *)
-        exec /usr/bin/dnf5.real "$@"
-        ;;
-esac
-WRAPPER
-
-cat > /usr/bin/dnf << 'WRAPPER'
-#!/usr/bin/env bash
-exec /usr/bin/dnf5 "$@"
-WRAPPER
-
-chmod +x /usr/bin/dnf5 /usr/bin/dnf
+echo "==> Marcatura dei pacchetti come dipendenze..."
+"$DNF" -y mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable
 
 PROTECTED_FILE="/usr/share/rakuos/protected-packages.txt"
-mkdir -p /usr/share/rakuos
-: > "$PROTECTED_FILE"
+mkdir -p "$(dirname "$PROTECTED_FILE")"
 
-cat >> "$PROTECTED_FILE" <<'EOF'
+if [ -f /ctx/protected-packages.txt ]; then
+    cp /ctx/protected-packages.txt "$PROTECTED_FILE"
+else
+    echo "ERRORE: /ctx/protected-packages.txt non trovato" >&2
+    exit 1
+fi
 
-# myrakuOS base packages
-flatpak
-podman
-distrobox
-podman-compose
-libxcrypt-compat
-rsync
-fuse
-squashfuse
-sqlite3
-openssl
-libnotify
-inotify-tools
-unzip
-appstream
-appstream-data
-fwupd
-fedora-logos
-EOF
+echo "==> Generazione manifest..."
+if [ -x /usr/libexec/rakuos/generate-base-manifest ]; then
+    /usr/libexec/rakuos/generate-base-manifest
+else
+    echo "ERRORE: generate-base-manifest non trovato" >&2
+    exit 1
+fi
 
-/usr/libexec/rakuos/generate-base-manifest
+echo "post-build.sh completato."
