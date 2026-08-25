@@ -1,10 +1,12 @@
 # Liste pacchetti myrakuOS
 
-Queste liste descrivono la composizione mirata della variante e sono mantenute separate dagli script upstream.
+Queste liste descrivono il payload della variante e sono collegate al build in modo esplicito.
 
 - `kde-core.txt`: componenti necessari alla sessione Plasma e all'integrazione desktop.
-- `kde-optional.txt`: componenti desktop espliciti ma rinviabili se la prima build evidenzia problemi o peso eccessivo.
-- `remove.txt`: candidati alla rimozione; resta vuoto fino alla validazione della baseline.
-- `protected-packages.txt`: riferimento per la protezione KDE; il manifest effettivo continua a essere generato dalla logica RakuOS.
+- `kde-optional.txt`: componenti desktop aggiuntivi, mantenuti separati per facilitare la riduzione successiva.
+- `remove.txt`: resta vuoto fino alla validazione della prima baseline.
+- `protected-packages.txt`: riferimento per i pacchetti KDE protetti.
 
-Non vengono usati gruppi generici come `@fonts` o `@hardware-support`. La compatibilità overlay, bootc e il lifecycle RakuOS restano responsabilità dei file upstream.
+Il build non usa i gruppi generici `@fonts` o `@hardware-support`.
+
+Il core RakuOS — overlay, bootc, wrapper DNF, manifest base, update, remove, reset e migrazione — resta di responsabilità della base upstream e non viene duplicato qui.

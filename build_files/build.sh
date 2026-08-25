@@ -1,129 +1,51 @@
-# ------------------------------------------------------------
-# 5. kde/build_files/build.sh (REV 2)
-# ------------------------------------------------------------
-cat > rakufinal/kde/build_files/build.sh << 'EOF'
-#!/bin/bash
-set -ouex pipefail
-FEDORA_VERSION=$(rpm -E %fedora)
+#!/usr/bin/env bash
+set -euo pipefail
 
-# ─── Lingue minime ─────────────────────────────────────────
-dnf5.real -y install glibc-langpack-en glibc-langpack-it
+# myrakuOS package composition
+# Keep the RakuOS base/overlay lifecycle intact; this file only defines
+# the additional desktop payload for the derived image.
 
-# ─── Storage e sistema ─────────────────────────────────────
-dnf5.real -y install \
-  snapper \
-  btrfs-assistant \
-  btrfsmaintenance \
-  rclone
+PACKAGE_DIR="/usr/share/myrakuos/packages"
+mkdir -p "$PACKAGE_DIR"
 
-# ─── Audio: PipeWire + WirePlumber ─────────────────────────
-dnf5.real -y install \
-  pipewire \
-  pipewire-alsa \
-  pipewire-pulseaudio \
-  wireplumber
-
-# ─── Firmware e driver video ───────────────────────────────
-dnf5.real -y install \
-  mt7xxx-firmware \
-  mesa-vulkan-drivers \
-  mesa-va-drivers
-
-# ─── Font base ─────────────────────────────────────────────
-dnf5.real -y install google-noto-fonts liberation-fonts
-
-# ─── KDE / Plasma ──────────────────────────────────────────
-dnf5.real -y install \
-  plasma-desktop \
-  plasma-workspace \
-  kscreen \
-  powerdevil \
-  plasma-nm \
-  plasma-pa \
-  plasma-systemmonitor \
-  plasma-discover \
-  plasma-discover-flatpak \
-  plasma-print-manager \
-  kde-connect \
-  kde-gtk-config \
-  kdeplasma-addons \
-  bluedevil \
-  kde-settings \
-  kde-settings-plasma \
-  kwalletmanager5 \
-  kio-fuse \
-  kdegraphics-thumbnailers \
-  kcalc \
-  skanpage \
-  kompare
-
-# ─── Plasma Login Manager ──────────────────────────────────
-dnf5.real -y install \
-  plasma-login-manager \
-  kcm-plasmalogin \
-  kde-settings-plasmalogin
-
-# ─── Portali e compatibilità X11 ───────────────────────────
-dnf5.real -y install \
-  xdg-desktop-portal-kde \
-  xorg-x11-server-Xwayland
-
-# ─── Applicazioni KDE ──────────────────────────────────────
-dnf5.real -y install \
-  dolphin \
-  dolphin-plugins \
-  kate \
-  kwrite \
-  konsole \
-  ark \
-  gwenview \
-  spectacle \
-  okular \
-  kfind \
-  filelight \
-  kinfocenter \
-  kio-admin \
-  kde-partitionmanager \
-  kf6-sonnet-hunspell
-
-# ─── Strumenti CLI ─────────────────────────────────────────
-dnf5.real -y install \
-  btop \
-  fastfetch \
-  openssh-server \
-  hunspell-it \
-  unrar-free \
-  system-config-printer \
-  fzf \
-  bash-completion \
-  grsync
-
-# ─── Sfondi ────────────────────────────────────────────────
-dnf5.real -y install \
-  f44-backgrounds-base \
-  f44-backgrounds-kde
-
-# ─── Rimuovi SOLO cose non volute (NON toccare il desktop) ──
-dnf5.real -y remove \
-  rakuos-welcome-qt \
-  rakuos-software-qt \
-  plasma-welcome \
-  plasma-welcome-fedora \
-  || true
-
-# ─── Rimuovi look&feel Fedora (mantieni sfondi F44) ─────────
-rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
-rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoradark.desktop
-rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedoralight.desktop
-rm -rf /usr/share/wallpapers/Fedora
-
-# ─── KDE customizations ────────────────────────────────────
-sed -i '$r /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/rakuos-pins.js' \
-  /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
-
-# ─── Servizi ───────────────────────────────────────────────
-systemctl enable plasmalogin.service
-systemctl enable sshd.service
-systemctl enable snapper-timeline.timer
-systemctl enable snapper-cleanup.timer
+cat > "$PACKAGE_DIR/kde-core.txt" <<'EOF'
+plasma-desktop
+plasma-workspace
+plasma-workspace-wayland
+plasma-browser-integration
+kscreen
+powerdevil
+plasma-nm
+plasma-pa
+xdg-desktop-portal-kde
+xorg-x11-server-Xwayland
+plasma-login-manager
+kcm-plasmalogin
+kde-settings-plasmalogin
+kde-gtk-config
+kde-settings
+kde-settings-plasma
+kio-fuse
+kdegraphics-thumbnailers
+bluedevil
 EOF
+
+cat > "$PACKAGE_DIR/kde-optional.txt" <<'EOF'
+plasma-systemmonitor
+plasma-discover
+plasma-discover-flatpak
+plasma-print-manager
+kde-connect
+kdeplasma-addons
+kwalletmanager5
+kcalc
+skanpage
+kompare
+EOF
+
+# These lists are intentionally explicit: no @fonts or @hardware-support groups.
+# Package installation must be invoked by the caller in the image's build stage.
+if [[ "${MYRAKUOS_INSTALL_PACKAGES:-0}" == "1" ]]; then
+    mapfile -t packages < <(cat "$PACKAGE_DIR/kde-core.txt" "$PACKAGE_DIR/kde-optional.txt" | sed '/^#/d;/^$/d')
+    dnf5.real -y install --setopt=install_weak_deps=False "${packages[@]}"
+fi
