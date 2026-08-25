@@ -1,7 +1,9 @@
 # Liste pacchetti myrakuOS
 
-La variante usa una composizione KDE esplicita, senza i gruppi generici `@fonts` e `@hardware-support`.
+La variante usa una composizione KDE esplicita e mirata.
 
-Il build installa il set KDE mirato in `build_files/build.sh`. Il file `post-build-overlay.sh` aggiunge al manifest effettivo solo i componenti KDE core protetti.
+Sono esclusi i gruppi generici `@fonts` e `@hardware-support`, il gaming, i pacchetti i686 e i componenti CachyKernel.
 
-Il core RakuOS — overlay, bootc, wrapper DNF, manifest base, update, remove, reset e migrazione — deve provenire dalla logica upstream di `rakuos-base` e non viene reinventato nella variante.
+Il supporto minimo alla virtualizzazione host viene mantenuto per eseguire VM classiche sul PC: QEMU/KVM, libvirt e virt-manager. I guest tools VirtualBox/VMware/SPICE/Hyper-V e QEMU guest agent non fanno parte dell'immagine.
+
+Il core RakuOS — overlay, bootc, wrapper DNF, manifest base, update, remove, reset e migrazione — deve rimanere quello upstream.

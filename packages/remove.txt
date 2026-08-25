@@ -1,3 +1,4 @@
-# Initial conservative removal candidates.
-# VM guest packages remain deferred because the image may be tested in a VM.
-# Keep this list empty until the first baseline build succeeds.
+# Conservative removals for myrakuOS.
+# Guest tools are intentionally excluded from the image; host virtualization
+# support is retained separately in the build payload.
+# Gaming, i686 and CachyKernel-specific packages are intentionally absent.

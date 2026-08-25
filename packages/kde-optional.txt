@@ -1,4 +1,4 @@
-# Optional desktop components retained as explicit choices.
+# Optional packages currently retained in the first complete KDE baseline.
 plasma-systemmonitor
 plasma-discover
 plasma-discover-flatpak
