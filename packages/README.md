@@ -1,12 +1,7 @@
 # Liste pacchetti myrakuOS
 
-Queste liste descrivono il payload della variante e sono collegate al build in modo esplicito.
+La variante usa una composizione KDE esplicita, senza i gruppi generici `@fonts` e `@hardware-support`.
 
-- `kde-core.txt`: componenti necessari alla sessione Plasma e all'integrazione desktop.
-- `kde-optional.txt`: componenti desktop aggiuntivi, mantenuti separati per facilitare la riduzione successiva.
-- `remove.txt`: resta vuoto fino alla validazione della prima baseline.
-- `protected-packages.txt`: riferimento per i pacchetti KDE protetti.
+Il build installa il set KDE mirato in `build_files/build.sh`. Il file `post-build-overlay.sh` aggiunge al manifest effettivo solo i componenti KDE core protetti.
 
-Il build non usa i gruppi generici `@fonts` o `@hardware-support`.
-
-Il core RakuOS — overlay, bootc, wrapper DNF, manifest base, update, remove, reset e migrazione — resta di responsabilità della base upstream e non viene duplicato qui.
+Il core RakuOS — overlay, bootc, wrapper DNF, manifest base, update, remove, reset e migrazione — deve provenire dalla logica upstream di `rakuos-base` e non viene reinventato nella variante.

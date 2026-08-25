@@ -1,23 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# myrakuOS post-build integration point.
-# The upstream RakuOS base post-build remains authoritative for overlay,
-# DNF wrappers, bootc metadata and base manifest generation.
-
-PROTECTED="/usr/share/rakuos/protected-packages.txt"
-PACKAGE_DIR="/usr/share/myrakuos/packages"
-
-if [[ ! -f "$PROTECTED" ]]; then
-    echo "ERROR: missing RakuOS protected package manifest: $PROTECTED" >&2
-    exit 1
-fi
-
-if [[ -f "$PACKAGE_DIR/kde-core.txt" ]]; then
-    {
-        printf '\n# myrakuOS KDE protected packages\n'
-        cat "$PACKAGE_DIR/kde-core.txt"
-    } >> "$PROTECTED"
-fi
-
-# Do not alter RakuOS overlay services or migration logic here.
+# myrakuOS post-build stage.
+# The RakuOS base post-build logic must be kept in sync with upstream.
+# This placeholder intentionally fails rather than silently claiming to
+# preserve overlay behavior if the upstream script has not been imported.
+echo "ERROR: upstream RakuOS base post-build logic must be imported before build" >&2
+exit 1
