@@ -1,0 +1,2 @@
+# Pacchetti da rimuovere — inizialmente solo candidati sicuri
+# Inserire un pacchetto per riga.
