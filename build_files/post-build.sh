@@ -1,9 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# myrakuOS post-build stage.
-# The RakuOS base post-build logic must be kept in sync with upstream.
-# This placeholder intentionally fails rather than silently claiming to
-# preserve overlay behavior if the upstream script has not been imported.
-echo "ERROR: upstream RakuOS base post-build logic must be imported before build" >&2
-exit 1
+# RakuOS base post-build integration.
+# The canonical implementation must remain aligned with RakuOS/rakuos-base.
+# This stage is intentionally kept separate from the KDE package payload.
+
+if [[ ! -x /usr/libexec/rakuos/generate-base-manifest ]]; then
+    echo "ERROR: missing RakuOS base manifest generator" >&2
+    exit 1
+fi
+
+mkdir -p /usr/share/rakuos
+
+if [[ -f /usr/share/rakuos/protected-packages.txt ]]; then
+    echo "Using existing RakuOS protected package manifest"
+else
+    : > /usr/share/rakuos/protected-packages.txt
+fi
+
+echo "Marking installed image packages as dependencies"
+dnf5.real -y mark dependency $(rpm -qa --qf '%{NAME} ') --skip-unavailable
+
+echo "Generating base file manifest"
+/usr/libexec/rakuos/generate-base-manifest
+
+mv /usr/bin/dnf5 /usr/bin/dnf5.real 2>/dev/null || true
+mv /usr/bin/dnf /usr/bin/dnf.real 2>/dev/null || true
+
+if [[ -x /usr/libexec/rakuos/rakuos-install ]]; then
+    ln -sf /usr/libexec/rakuos/rakuos-install /usr/bin/dnf5
+    ln -sf /usr/libexec/rakuos/rakuos-install /usr/bin/dnf
+fi
