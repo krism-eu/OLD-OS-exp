@@ -1,2 +1,3 @@
-# Pacchetti da rimuovere — inizialmente solo candidati sicuri
-# Inserire un pacchetto per riga.
+# Initial conservative removal candidates.
+# VM guest packages remain deferred because the image may be tested in a VM.
+# Keep this list empty until the first baseline build succeeds.

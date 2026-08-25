@@ -1,2 +1,11 @@
-# KDE optional — da valutare dopo la prima immagine funzionante
-# Inserire un pacchetto per riga.
+# Optional desktop components retained as explicit choices.
+plasma-systemmonitor
+plasma-discover
+plasma-discover-flatpak
+plasma-print-manager
+kde-connect
+kdeplasma-addons
+kwalletmanager5
+kcalc
+skanpage
+kompare

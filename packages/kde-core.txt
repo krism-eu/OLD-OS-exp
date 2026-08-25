@@ -1,2 +1,21 @@
-# KDE core — da completare dopo il confronto con rakuos-kde
-# Inserire un pacchetto per riga.
+# KDE Plasma core for myrakuOS
+# Deliberately avoids broad Fedora package groups.
+plasma-desktop
+plasma-workspace
+plasma-workspace-wayland
+plasma-browser-integration
+kscreen
+powerdevil
+plasma-nm
+plasma-pa
+xdg-desktop-portal-kde
+xorg-x11-server-Xwayland
+plasma-login-manager
+kcm-plasmalogin
+kde-settings-plasmalogin
+kde-gtk-config
+kde-settings
+kde-settings-plasma
+kio-fuse
+kdegraphics-thumbnailers
+bluedevil
