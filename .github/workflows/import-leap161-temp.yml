@@ -1,0 +1,23 @@
+name: Temporary import leap161
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/import-leap161-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import leap161
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --mirror https://github.com/krism-eu/leap161.git source.git
+          cd source.git
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/leap161 --force
