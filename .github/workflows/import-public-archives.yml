@@ -1,0 +1,48 @@
+name: Import public Raku archives
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/import-public-archives.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import rakuos-base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --mirror https://github.com/krism-eu/rakuos-base.git source.git
+          cd source.git
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/rakuos-base --force
+          cd ..
+          rm -rf source.git
+
+      - name: Import rakuos-kde-custom
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --mirror https://github.com/krism-eu/rakuos-kde-custom.git source.git
+          cd source.git
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/rakuos-kde-custom --force
+          cd ..
+          rm -rf source.git
+
+      - name: Import myrakuOS
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --mirror https://github.com/krism-eu/myrakuOS.git source.git
+          cd source.git
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/myrakuOS --force
+          cd ..
+          rm -rf source.git
