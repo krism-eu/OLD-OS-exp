@@ -1,0 +1,24 @@
+name: Setup microRaku
+on: [workflow_dispatch]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Execute setup script
+        run: |
+          chmod +x setup.sh
+          bash setup.sh
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Initial release: microRaku persistent overlay" || echo "No changes"
+          git push
