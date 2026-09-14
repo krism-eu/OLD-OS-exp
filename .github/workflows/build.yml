@@ -1,0 +1,59 @@
+name: Build RakuOS Base
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Containerfile'
+      - 'build_files/**'
+      - 'system_files/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: rakuos-base-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/krism-eu/rakuos-base:minimal-base
+
+jobs:
+  build-base:
+    name: Build and publish RakuOS Base
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build base image
+        uses: redhat-actions/buildah-build@v3
+        with:
+          image: rakuos-base
+          tags: minimal-base
+          containerfiles: |
+            ./Containerfile
+          context: .
+
+      - name: Log in to GHCR
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Tag image
+        run: |
+          podman tag \
+            rakuos-base:minimal-base \
+            "${IMAGE_NAME}"
+
+      - name: Push image
+        run: |
+          podman push \
+            "${IMAGE_NAME}"
