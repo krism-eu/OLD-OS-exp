@@ -14,35 +14,41 @@ jobs:
   import:
     runs-on: ubuntu-latest
     steps:
-      - name: Import rakuos-base
+      - name: Import rakuos-base history without workflow files
         env:
           GH_TOKEN: ${{ github.token }}
+          FILTER_BRANCH_SQUELCH_WARNING: '1'
         run: |
           set -euo pipefail
-          git clone --mirror https://github.com/krism-eu/rakuos-base.git source.git
-          cd source.git
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/rakuos-base --force
+          git clone --single-branch --branch main https://github.com/krism-eu/rakuos-base.git source
+          cd source
+          git filter-branch -f --index-filter 'git rm -r --cached --ignore-unmatch .github/workflows' --prune-empty -- main
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" main:refs/heads/rakuos-base --force
           cd ..
-          rm -rf source.git
+          rm -rf source
 
-      - name: Import rakuos-kde-custom
+      - name: Import rakuos-kde-custom history without workflow files
         env:
           GH_TOKEN: ${{ github.token }}
+          FILTER_BRANCH_SQUELCH_WARNING: '1'
         run: |
           set -euo pipefail
-          git clone --mirror https://github.com/krism-eu/rakuos-kde-custom.git source.git
-          cd source.git
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/rakuos-kde-custom --force
+          git clone --single-branch --branch main https://github.com/krism-eu/rakuos-kde-custom.git source
+          cd source
+          git filter-branch -f --index-filter 'git rm -r --cached --ignore-unmatch .github/workflows' --prune-empty -- main
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" main:refs/heads/rakuos-kde-custom --force
           cd ..
-          rm -rf source.git
+          rm -rf source
 
-      - name: Import myrakuOS
+      - name: Import myrakuOS history without workflow files
         env:
           GH_TOKEN: ${{ github.token }}
+          FILTER_BRANCH_SQUELCH_WARNING: '1'
         run: |
           set -euo pipefail
-          git clone --mirror https://github.com/krism-eu/myrakuOS.git source.git
-          cd source.git
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/heads/main:refs/heads/myrakuOS --force
+          git clone --single-branch --branch main https://github.com/krism-eu/myrakuOS.git source
+          cd source
+          git filter-branch -f --index-filter 'git rm -r --cached --ignore-unmatch .github/workflows' --prune-empty -- main
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" main:refs/heads/myrakuOS --force
           cd ..
-          rm -rf source.git
+          rm -rf source
