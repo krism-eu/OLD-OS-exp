@@ -1,0 +1,477 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+version: 1
+
+name: kionite-v1
+description: "Fedora Kinoite KDE/Wayland superlight — Ryzen 5 5625U Vega 7, 10 W fanless, Btrfs/Snapper, no gaming, no guest tools"
+
+base-image: ghcr.io/ublue-os/kinoite-main
+image-version: "44"
+
+modules:
+  # ==========================================================================
+  # 1. FILE DI SISTEMA
+  # ==========================================================================
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # ==========================================================================
+  # 2. PACCHETTI BASE NECESSARI
+  # ==========================================================================
+  - type: dnf
+    install:
+      packages:
+        - glibc-langpack-en
+        - glibc-langpack-it
+        - snapper
+        - btrfs-assistant
+        - btrfsmaintenance
+        - rclone
+        - mt7xxx-firmware
+        - plasma-print-manager
+        - kde-connect
+
+  # ==========================================================================
+  # 2,5. PACCHETTI VARI
+  # ==========================================================================
+  - type: dnf
+    install:
+      packages:
+        - btop
+        - fastfetch
+        - fish
+
+
+  # ==========================================================================
+  # 3. RIMOZIONI BASE: VM, INPUT, ACCESSIBILITA, GAMING E VPN
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Guest tools VM
+        - virtualbox-guest-additions
+        - open-vm-tools
+        - open-vm-tools-desktop
+        - spice-vdagent
+        - spice-webdavd
+        - qemu-guest-agent
+        - qemu-user-static-aarch64
+        - hyperv-daemons
+        - hyperv-daemons-license
+        - hypervfcopyd
+        - hypervkvpd
+        - hypervvssd
+
+        # Metodi di input asiatici IBus
+        - ibus-anthy
+        - ibus-anthy-python
+        - ibus-chewing
+        - ibus-hangul
+        - ibus-libpinyin
+        - ibus-m17n
+        - ibus-typing-booster
+        - kasumi-common
+        - kasumi-unicode
+        - anthy-unicode
+
+        # Accessibilita non utilizzata
+        - braille-printer-app
+        - brltty
+        - brlapi
+        - python3-brlapi
+        - orca
+
+        # Gaming
+        - gamemode
+
+        # Backend VPN
+        - openconnect
+        - openvpn
+        - vpnc
+        - NetworkManager-openconnect
+        - NetworkManager-openvpn
+        - NetworkManager-vpnc
+
+        # name: Remove unused identity services
+        - sssd-client
+        - sssd-common
+        - sssd-kcm
+        - sssd-krb5-common
+        - realmd
+
+  # ==========================================================================
+  # 4. RIMOZIONI STRUMENTI E COMPONENTI OPZIONALI
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Firma/build
+        - cosign
+
+        # Debug e strumenti ridondanti & raid
+        - gdb
+        - gdb-headless
+        - vim-enhanced
+        - nvtop
+        - htop
+        - mcelog
+
+        # Firmware GPU NVIDIA: sistema AMD
+        - nvidia-gpu-firmware
+
+        # Driver HP: la multifunzione epson usa CUPS/SANE/Gutenprint
+        - hplip
+        - hplip-common
+        - hplip-libs
+
+        # Driver stampanti non Epson
+        - printer-driver-brlaser
+        - ptouch-driver
+
+        # Desktop remoto KDE
+        - krfb
+        - krfb-libs
+        - krdp
+
+        # Componenti KDE opzionali non utilizzati
+        - khelpcenter
+        - plasma-welcome
+        - kdebugsettings
+        - plasma-thunderbolt
+
+        # Client NFS non utilizzati
+        - nfs-client-utils
+        - nfs-common-utils
+        - nfs-utils
+        - nfsv3-client-utils
+        - nfsv4-client-utils
+        - libnfsidmap
+        # Fingerprint non utilizzato
+        - fprintd
+        - fprintd-pam
+
+  # ==========================================================================
+  # 5. AKONADI/MARIADB: MANTENUTI
+  # ==========================================================================
+  # Akonadi e Akonadi-MySQL sono mantenuti perche i loro scriptlet %postun
+  # falliscono nel container Fedora durante la build.
+  # Anche MariaDB e qt6-qtbase-mysql restano installati in questa versione.
+
+  # ==========================================================================
+  # 6. RIMOZIONI MODEM, FIRMWARE INTEL E SMARTCARD
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # PIM, modem e componenti opzionali
+        - fwupd-plugin-modem-manager
+        - kunifiedpush
+        - mobile-broadband-provider-info
+        - qcom-wwan-firmware
+        - usb_modeswitch
+        - usb_modeswitch-data
+
+        # mt7xxx-firmware NON va rimosso: serve al Wi-Fi/Bluetooth MediaTek
+
+        # Componenti Intel non necessari sul sistema Ryzen/AMD
+        - intel-gmmlib
+        - intel-gpu-firmware
+        - intel-lpmd
+        - intel-mediasdk
+        - intel-vaapi-driver
+        - intel-vpl-gpu-rt
+        - intel-vsc-firmware
+        - libva-intel-media-driver
+
+        # Smartcard, PC/SC e YubiKey
+        - libpskc
+        - libyubikey
+        - opensc
+        - opensc-libs
+        - pam-u2f
+        - pam_yubico
+        - pamu2fcfg
+        - pcsc-lite
+        - pcsc-lite-ccid
+        - pcsc-lite-libs
+        - python3-fido2
+        - python3-pskc
+        - python3-pyscard
+        - python3-yubikey-manager
+        - ykclient
+        - ykpers
+        - yubikey-manager
+
+  # ==========================================================================
+  # 7. RIMOZIONI KDE, VLC, FONT E FIREFOX
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Integrazione Google Drive KDE
+        - kio-gdrive
+        - libkgapi
+
+        # VLC e backend Phonon VLC
+        - phonon-backend-vlc-common
+        - phonon-qt5-backend-vlc
+        - phonon-qt6-backend-vlc
+        - vlc-libs
+        - vlc-plugin-ffmpeg
+        - vlc-plugin-gstreamer
+        - vlc-plugin-pipewire
+        - vlc-plugin-pulseaudio
+        - vlc-plugins-base
+        - vlc-plugins-video-out
+
+        # Font linguistici non necessari
+        - default-fonts-am
+        - default-fonts-ar
+        - default-fonts-as
+        - default-fonts-ast
+        - default-fonts-be
+        - default-fonts-bg
+        - default-fonts-bn
+        - default-fonts-bo
+        - default-fonts-br
+        - default-fonts-chr
+        - default-fonts-dv
+        - default-fonts-dz
+        - default-fonts-el
+        - default-fonts-eo
+        - default-fonts-eu
+        - default-fonts-fa
+        - default-fonts-got
+        - default-fonts-gu
+        - default-fonts-he
+        - default-fonts-hi
+        - default-fonts-hy
+        - default-fonts-ia
+        - default-fonts-ii
+        - default-fonts-iu
+        - default-fonts-ka
+        - default-fonts-kab
+        - default-fonts-km
+        - default-fonts-kn
+        - default-fonts-ku
+        - default-fonts-lo
+        - default-fonts-mai
+        - default-fonts-ml
+        - default-fonts-mni
+        - default-fonts-mr
+        - default-fonts-my
+        - default-fonts-nb
+        - default-fonts-ne
+        - default-fonts-nn
+        - default-fonts-nqo
+        - default-fonts-nr
+        - default-fonts-nso
+        - default-fonts-or
+        - default-fonts-other-sans
+        - default-fonts-other-serif
+        - default-fonts-pa
+        - default-fonts-ru
+        - default-fonts-sat
+        - default-fonts-si
+        - default-fonts-ss
+        - default-fonts-syr
+        - default-fonts-ta
+        - default-fonts-te
+        - default-fonts-th
+        - default-fonts-tn
+        - default-fonts-ts
+        - default-fonts-uk
+        - default-fonts-ur
+        - default-fonts-ve
+        - default-fonts-vi
+        - default-fonts-xh
+        - default-fonts-yi
+        - default-fonts-zu
+        - jomolhari-fonts
+        - madan-fonts
+        - paktype-naskh-basic-fonts
+        - rit-meera-new-fonts
+        - rit-rachana-fonts
+        - sil-padauk-fonts
+        - vazirmatn-vf-fonts
+
+        # Font CJK
+        - default-fonts-cjk-mono
+        - default-fonts-cjk-serif
+        - google-noto-sans-cjk-fonts
+        - google-noto-sans-mono-cjk-vf-fonts
+        - google-noto-serif-cjk-vf-fonts
+
+        # Firefox RPM e pacchetti lingua
+        - firefox
+        - firefox-langpacks
+
+        # CLDR emoji annotation
+        - cldr-emoji-annotation
+        - cldr-emoji-annotation-dtd
+
+        # Residui Fedora Workstation
+        - xdriinfo
+        - fedora-bookmarks
+        - fedora-chromium-config
+        - fedora-chromium-config-kde
+        - fedora-workstation-backgrounds
+
+        # Sostituito dai langpack minimi en/it
+        - glibc-all-langpacks
+
+  # ==========================================================================
+  # 8. RIMOZIONE INPUT METHOD FCITX5
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Core Fcitx5 non utilizzato
+        - fcitx5
+        - fcitx5-configtool
+        - fcitx5-data
+        - fcitx5-gtk
+        - fcitx5-gtk3
+        - fcitx5-gtk4
+        - fcitx5-libs
+        - fcitx5-lua
+        - fcitx5-qt
+        - fcitx5-qt5
+        - fcitx5-qt6
+        - fcitx5-qt-libfcitx5qt6widgets
+        - fcitx5-qt-libfcitx5qtdbus
+        - fcitx5-qt-qt6gui
+        - kcm-fcitx5
+
+        # Addon e librerie input asiatiche
+        - fcitx5-chewing
+        - fcitx5-chinese-addons
+        - fcitx5-chinese-addons-data
+        - fcitx5-hangul
+        - fcitx5-libthai
+        - fcitx5-m17n
+        - fcitx5-mozc
+        - fcitx5-sayura
+        - fcitx5-unikey
+        - libchewing
+        - libhangul
+        - libime
+        - libime-data
+        - libpinyin
+        - libpinyin-data
+        - m17n-db
+        - m17n-db-devel
+        - m17n-lib
+        - opencc
+
+  # ==========================================================================
+  # 8,5 RIMOZIOne SOLAAR E GPM
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        - solaar-udev
+        - gpm-libs
+  # ==========================================================================
+  # 8,6. PULIZIA AUTHSELECT FINGERPRINT
+  # ==========================================================================
+  - type: script
+    snippets:
+      - |
+        set -eu
+
+        if command -v authselect >/dev/null 2>&1; then
+          if authselect current -r 2>/dev/null | grep -qw 'with-fingerprint'; then
+            authselect disable-feature with-fingerprint
+            authselect apply-changes
+            echo "✅ Feature 'with-fingerprint' disabilitata"
+          else
+            echo "ℹ️ Feature 'with-fingerprint' non presente"
+          fi
+        fi
+
+        if rpm -q fprintd >/dev/null 2>&1 || rpm -q fprintd-pam >/dev/null 2>&1; then
+          echo "ERRORE: fprintd/fprintd-pam è ancora installato" >&2
+          rpm -q fprintd fprintd-pam || true
+          exit 1
+        fi
+
+        if find /etc/pam.d -type f -exec grep -Hn 'pam_fprintd\.so' {} + 2>/dev/null; then
+          echo "ERRORE: riferimento PAM attivo a pam_fprintd.so" >&2
+          exit 1
+        fi
+
+        echo "✅ Fingerprint completamente rimosso"
+
+  # ==========================================================================
+  # 8,7. RIDUZIONE WALLPAPER PLASMA
+  # ==========================================================================
+  - type: script
+    snippets:
+      - |
+        set -eu
+
+        WALLPAPER_DIR="/usr/share/wallpapers"
+
+        # Mantieni:
+        # - F44        -> wallpaper Fedora 44 predefinito
+        # - Nexus      -> wallpaper Plasma scelto
+        # - Nuvole     -> wallpaper Plasma scelto
+        # - summer_1am -> wallpaper Plasma scelto
+        find "$WALLPAPER_DIR" -mindepth 1 -maxdepth 1 -type d \
+          ! -name 'F44' \
+          ! -name 'Nexus' \
+          ! -name 'Nuvole' \
+          ! -name 'summer_1am' \
+          -exec rm -rf {} +
+
+        echo "✅ Wallpaper ridotti a F44, Nexus, Nuvole e summer_1am"
+
+
+
+  # ==========================================================================
+  # 9. FLATPAK DI SISTEMA
+  # ==========================================================================
+  - type: default-flatpaks
+    configurations:
+      - notify: true
+        scope: system
+        install:
+         - com.github.tchx84.Flatseal
+         - io.github.flattool.Warehouse
+
+      - notify: false
+        scope: user
+
+  # ==========================================================================
+  # 10. SERVIZI SYSTEMD
+  # ==========================================================================
+  - type: systemd
+    system:
+      disabled:
+        - gssproxy.service
+        - NetworkManager-wait-online.service
+        - fedora-atomic-desktop-appstream-cache-refresh.service
+        - flatpak-system-update.timer
+        - systemd-homed.service
+        - systemd-homed-activate.service
+        - smartd.service
+        - ModemManager.service
+      masked:
+        - foomaticrip-upgrade.service
+
+  # ==========================================================================
+  # 11. FIRMA DELL'IMMAGINE - OPZIONALE
+  # ==========================================================================
+  # - type: signing
+  #   cosign:
+  #     private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
+  #     password: ${{ secrets.COSIGN_PASSWORD }}

@@ -1,0 +1,451 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+version: 1
+
+name: kinoite-base-main-v1
+description: "Fedora KDE/Wayland superlight from base-main — Ryzen 5 5625U / Vega 7, fanless, Btrfs/Snapper"
+
+base-image: ghcr.io/ublue-os/base-main
+image-version: "44"
+
+modules:
+  # ==========================================================================
+  # 1. FILE DI SISTEMA
+  # ==========================================================================
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # ==========================================================================
+  # 2. PACCHETTI BASE, AUDIO E PLASMA
+  # ==========================================================================
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        # Lingue minime
+        - glibc-langpack-en
+        - glibc-langpack-it
+
+        # Storage e sistema
+        - snapper
+        - btrfs-assistant
+        - btrfsmaintenance
+        - rclone
+
+        # Audio moderno: PipeWire + WirePlumber.
+        # pipewire-pulseaudio offre compatibilità PulseAudio tramite PipeWire.
+        - pipewire
+        - pipewire-alsa
+        - pipewire-pulseaudio
+        - wireplumber
+        - mt7xxx-firmware
+        - mesa-vulkan-drivers
+        - mesa-va-drivers
+
+        # KDE / Plasma
+        - plasma-desktop
+        - plasma-workspace
+        - kscreen
+        - powerdevil
+        - plasma-nm
+        - plasma-pa
+        - plasma-systemmonitor
+        - plasma-discover
+        - plasma-discover-flatpak
+        - plasma-print-manager
+        - kde-connect
+        - kde-gtk-config
+        - kdeplasma-addons
+        - bluedevil
+        - kde-settings
+        - kde-settings-plasma
+        - kwalletmanager5
+        - kio-fuse
+        - kdegraphics-thumbnailers
+        - kcalc
+        - skanpage
+        - kompare
+
+        # Plasma Login Manager
+        - plasma-login-manager
+        - kcm-plasmalogin
+        - kde-settings-plasmalogin
+
+        # Portali e compatibilità X11 per applicazioni legacy
+        - xdg-desktop-portal-kde
+        - xorg-x11-server-Xwayland
+
+        # Applicazioni KDE
+        - dolphin
+        - dolphin-plugins
+        - kate
+        - kwrite
+        - konsole
+        - ark
+        - gwenview
+        - spectacle
+        - okular
+        - kfind
+        - filelight
+        - kinfocenter
+        - kio-admin
+        - kde-partitionmanager
+        - kf6-sonnet-hunspell
+
+        # Strumenti CLI
+        - btop
+        - fastfetch
+        - openssh-server
+        - hunspell-it
+        - unrar-free
+        - system-config-printer
+        - fzf
+        - bash-completion
+        - grsync
+
+
+        # Sfondi
+        - f44-backgrounds-base
+        - f44-backgrounds-kde
+
+  # ==========================================================================
+  # 3. RIMOZIONI BASE: VM, INPUT, ACCESSIBILITÀ, GAMING, NFS
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Guest tools VM
+        - virtualbox-guest-additions
+        - open-vm-tools
+        - open-vm-tools-desktop
+        - spice-vdagent
+        - spice-webdavd
+        - qemu-guest-agent
+        - qemu-user-static-aarch64
+        - hyperv-daemons
+        - hyperv-daemons-license
+        - hypervfcopyd
+        - hypervkvpd
+        - hypervvssd
+
+        # Metodi di input asiatici IBus
+        - ibus-anthy
+        - ibus-anthy-python
+        - ibus-chewing
+        - ibus-hangul
+        - ibus-libpinyin
+        - ibus-m17n
+        - ibus-typing-booster
+        - kasumi-common
+        - kasumi-unicode
+        - anthy-unicode
+
+        # Accessibilità non utilizzata
+        - braille-printer-app
+        - brltty
+        - brlapi
+        - python3-brlapi
+        - orca
+
+        # Gaming e periferiche non utilizzate
+        - gamemode
+
+        # Identity enterprise, NFS e RPC
+        - sssd-client
+        - sssd-common
+        - sssd-kcm
+        - sssd-krb5-common
+        - sssd-nfs-idmap
+        - realmd
+        - nfs-client-utils
+        - nfs-common-utils
+        - nfsv3-client-utils
+        - nfsv4-client-utils
+        - nfs-utils
+        - libnfsidmap
+        - rpcbind
+        - gssproxy
+        - audit
+        - audit-rules
+
+
+  # ==========================================================================
+  # 4. RIMOZIONI STRUMENTI E COMPONENTI OPZIONALI
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Firma/build, debug e tool ridondanti
+        - vim-enhanced
+        - vim-common
+        - vim-data
+        - vim-filesystem
+        - xxd
+        - nvtop
+        - htop
+        - hwloc-libs
+        - mcelog
+        - gpm-libs
+        - cosign
+
+        # Firmware GPU NVIDIA: hardware AMD.
+        - nvidia-gpu-firmware
+
+        # SMART / monitoraggio hardware non desiderato
+        - smartmontools
+        - smartmontools-selinux
+
+  # ==========================================================================
+  # 5. RIMOZIONI MODEM, INTEL E SMARTCARD
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Non rimuovere ModemManager: mantenerlo evita rimozioni a cascata
+        # di componenti NetworkManager non ancora validate.
+        - fwupd-plugin-modem-manager
+        - qcom-wwan-firmware
+        - usb_modeswitch
+        - usb_modeswitch-data
+
+        # mt7xxx-firmware NON va rimosso: serve al Wi-Fi/Bluetooth MediaTek.
+
+        # Hardware AMD: stack Intel GPU/media non necessario.
+        - intel-gmmlib
+        - intel-gpu-firmware
+        - intel-lpmd
+        - intel-mediasdk
+        - intel-vaapi-driver
+        - intel-vpl-gpu-rt
+        - intel-vsc-firmware
+        - libva-intel-media-driver
+
+        # Firmware Wi-Fi non usato (in base a lspci/lsusb: solo MediaTek + Realtek presenti)
+        - iwlwifi-mvm-firmware
+        - iwlwifi-mld-firmware
+        - iwlwifi-dvm-firmware
+        - iwlegacy-firmware
+        - atheros-firmware
+        - brcmfmac-firmware
+        - libertas-firmware
+        - nxpwireless-firmware
+        - tiwilink-firmware
+        - python3-fido2
+        - python3-pskc
+        - python3-pyscard
+        - python3-yubikey-manager
+        - ykclient
+        - ykpers
+        - yubikey-manager
+
+  # ==========================================================================
+  # 6. RIMOZIONI FONT, FIREFOX E VARIE
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        # Font linguistici non necessari
+        - default-fonts-am
+        - default-fonts-ar
+        - default-fonts-as
+        - default-fonts-ast
+        - default-fonts-be
+        - default-fonts-bg
+        - default-fonts-bn
+        - default-fonts-bo
+        - default-fonts-br
+        - default-fonts-chr
+        - default-fonts-dv
+        - default-fonts-dz
+        - default-fonts-el
+        - default-fonts-eo
+        - default-fonts-eu
+        - default-fonts-fa
+        - default-fonts-got
+        - default-fonts-gu
+        - default-fonts-he
+        - default-fonts-hi
+        - default-fonts-hy
+        - default-fonts-ia
+        - default-fonts-ii
+        - default-fonts-iu
+        - default-fonts-ka
+        - default-fonts-kab
+        - default-fonts-km
+        - default-fonts-kn
+        - default-fonts-ku
+        - default-fonts-lo
+        - default-fonts-mai
+        - default-fonts-ml
+        - default-fonts-mni
+        - default-fonts-mr
+        - default-fonts-my
+        - default-fonts-nb
+        - default-fonts-ne
+        - default-fonts-nn
+        - default-fonts-nqo
+        - default-fonts-nr
+        - default-fonts-nso
+        - default-fonts-or
+        - default-fonts-other-sans
+        - default-fonts-other-serif
+        - default-fonts-pa
+        - default-fonts-ru
+        - default-fonts-sat
+        - default-fonts-si
+        - default-fonts-ss
+        - default-fonts-syr
+        - default-fonts-ta
+        - default-fonts-te
+        - default-fonts-th
+        - default-fonts-tn
+        - default-fonts-ts
+        - default-fonts-uk
+        - default-fonts-ur
+        - default-fonts-ve
+        - default-fonts-vi
+        - default-fonts-xh
+        - default-fonts-yi
+        - default-fonts-zu
+        - jomolhari-fonts
+        - madan-fonts
+        - paktype-naskh-basic-fonts
+        - rit-meera-new-fonts
+        - rit-rachana-fonts
+        - sil-padauk-fonts
+        - vazirmatn-vf-fonts
+
+        # Font CJK
+        - default-fonts-cjk-mono
+        - default-fonts-cjk-serif
+        - google-noto-sans-cjk-fonts
+        - google-noto-sans-mono-cjk-vf-fonts
+        - google-noto-serif-cjk-vf-fonts
+
+        # Firefox RPM: usare Flatpak se desiderato.
+        - firefox
+        - firefox-langpacks
+
+        - cldr-emoji-annotation
+        - cldr-emoji-annotation-dtd
+        - fedora-bookmarks
+        - fedora-chromium-config
+        - fedora-workstation-backgrounds
+        - glibc-all-langpacks
+
+  # ==========================================================================
+  # 7. RIMOZIONE INPUT METHOD RESIDUI
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        - libchewing
+        - libhangul
+        - libpinyin
+        - libpinyin-data
+        - m17n-db
+        - m17n-lib
+
+  # ==========================================================================
+  # 8. RIMOZIONI VARIE
+  # ==========================================================================
+  - type: dnf
+    remove:
+      auto-remove: false
+      packages:
+        - hunspell-en-AU
+        - hunspell-en-CA
+        - hunspell-en-GB
+
+  # ==========================================================================
+  # 8.5. PULIZIA AUTHSELECT / FINGERPRINT
+  # ==========================================================================
+  - type: script
+    snippets:
+      - |
+        set -eu
+
+        if command -v authselect >/dev/null 2>&1 \
+          && authselect current -r 2>/dev/null | grep -qw with-fingerprint; then
+          authselect disable-feature with-fingerprint
+          authselect apply-changes
+        fi
+
+        if grep -Rqs 'pam_fprintd\.so' /etc/pam.d 2>/dev/null; then
+          echo "Riferimento PAM residuo a pam_fprintd.so" >&2
+          grep -Rns 'pam_fprintd\.so' /etc/pam.d || true
+          exit 1
+        fi
+
+  # ==========================================================================
+  # 9. FLATPAK DI SISTEMA
+  # ==========================================================================
+  - type: default-flatpaks
+    configurations:
+      - notify: true
+        scope: system
+        install:
+          - com.github.tchx84.Flatseal
+      - notify: false
+        scope: user
+
+  # ==========================================================================
+  # 10. PULIZIA DNF E TARGET GRAFICO
+  # ==========================================================================
+  - type: script
+    snippets:
+      - |
+        set -eu
+        dnf clean all
+        rm -rf /var/cache/dnf
+        systemctl set-default graphical.target
+
+  # ==========================================================================
+  # 10.5 BASHRC
+  # ==========================================================================
+  - type: files
+    files:
+      - source: bashrc/.bashrc
+        destination: /etc/skel/.bashrc
+
+  # ==========================================================================
+  # 11. SERVIZI SYSTEMD
+  # ==========================================================================
+  - type: systemd
+    system:
+      enabled:
+        - plasmalogin.service
+      disabled:
+        - NetworkManager-wait-online.service
+        - fedora-atomic-desktop-mandb-update.service
+        - fedora-atomic-desktop-appstream-cache-refresh.service
+        - flatpak-system-update.timer
+        - ModemManager.service
+        - sshd.service
+        - flatpak-add-fedora-repos.service
+        - lvm-devices-import.service
+        - lvm2-monitor.service
+        - systemd-confext.service
+        - rpmdb-rebuild.service
+        - systemd-network-generator.service
+        - mdmonitor.service
+        - systemd-tpm2-clear.service
+        - thermald.service
+      masked: []
+      
+# Non abilitare fedora-kinoite-plasmalogin-workaround.service.
+# È un workaround specifico Kinoite/OSTree e non va copiato in una base-main.
+
+# ==========================================================================
+# 12. FIRMA DELL'IMMAGINE — OPZIONALE
+# ==========================================================================
+# - type: signing
+#     cosign:
+#        key:
