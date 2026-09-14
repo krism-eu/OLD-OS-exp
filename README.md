@@ -6,6 +6,7 @@ Archivio dei precedenti repository Raku/RakuOS/Kionite consolidati in branch sep
 
 - `rakuos-base` — origine: `krism-eu/rakuos-base`
 - `rakuos-kde-custom` — origine: `krism-eu/rakuos-kde-custom`
+- `myrakuOS` — origine: `krism-eu/myrakuOS`
 - `raku-minimal-1` — origine: `krism-eu/raku-minimal-1`
 - `microRakuOS` — origine: `krism-eu/microRakuOS`
 - `raku-kris` — origine: `krism-eu/raku-kris`
