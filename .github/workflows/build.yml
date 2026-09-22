@@ -1,0 +1,173 @@
+name: Build and Publish RakuKrisOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - Containerfile
+      - build_files/**
+      - config/**
+      - .github/workflows/build.yml
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: rakukrisos-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Buildah
+        run: |
+          set -euxo pipefail
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list \
+                     /etc/apt/sources.list.d/google-chrome.sources
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends buildah
+          buildah --version
+
+      - name: Normalize image name
+        run: echo "IMAGE_NAME=${IMAGE_NAME,,}" >> "$GITHUB_ENV"
+
+      - name: Build and extract pinned overlay artifact
+        run: |
+          set -euxo pipefail
+          rm -rf build_artifacts
+          mkdir -p build_artifacts
+
+          buildah bud \
+            --pull=always \
+            --format oci \
+            --target overlay-builder \
+            --tag localhost/rakukrisos-overlay-builder \
+            -f Containerfile .
+
+          builder_ctr="$(buildah from localhost/rakukrisos-overlay-builder)"
+          cleanup_builder() {
+            buildah rm "$builder_ctr" >/dev/null 2>&1 || true
+            buildah rmi localhost/rakukrisos-overlay-builder >/dev/null 2>&1 || true
+          }
+          trap cleanup_builder EXIT
+
+          buildah run "$builder_ctr" -- \
+            cat /usr/local/bin/rakuos-overlay-mount \
+            > build_artifacts/rakuos-overlay-mount
+
+          chmod 0755 build_artifacts/rakuos-overlay-mount
+          test -s build_artifacts/rakuos-overlay-mount
+          test -x build_artifacts/rakuos-overlay-mount
+          file build_artifacts/rakuos-overlay-mount
+          sha256sum build_artifacts/rakuos-overlay-mount
+
+      # Proven model from the previously successful Fedora 44 Minimal build:
+      # Buildah runs rootless for build, validation and push.
+      - name: Build OCI image
+        run: |
+          set -euxo pipefail
+          buildah bud \
+            --pull=always \
+            --format oci \
+            --build-arg FEDORA_VERSION=44 \
+            --tag "${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}" \
+            --tag "${REGISTRY}/${IMAGE_NAME}:latest" \
+            -f Containerfile .
+
+      - name: Validate image contents
+        run: |
+          set -euxo pipefail
+          buildah from --name rakukrisos-validation "${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}"
+
+          buildah run rakukrisos-validation -- rpm -q \
+            bootc ostree rakuos-core rakuos-rum rum-dnf-shim \
+            plasma-workspace plasma-desktop kwin \
+            plasma-login-manager kcm-plasmalogin kde-settings-plasmalogin \
+            xcb-util-cursor pipewire-pulseaudio \
+            glibc-langpack-en glibc-langpack-it langpacks-core-en langpacks-core-it
+
+          buildah run rakukrisos-validation -- sh -euxc '
+            test -x /usr/bin/rum
+            test -r /etc/rum/rum.conf
+            grep -q "install_weak_deps=0" /etc/rum/rum.conf
+            grep -q "clean_requirements_on_remove=0" /etc/rum/rum.conf
+
+            test -e /usr/lib/systemd/system/plasmalogin.service
+            test -e /usr/lib64/qt6/plugins/platforms/libqxcb.so
+            test -z "$(ldd /usr/lib64/qt6/plugins/platforms/libqxcb.so | awk '\''/not found/{print}'\'')"
+            test -z "$(ldd /usr/libexec/plasma-login-greeter | awk '\''/not found/{print}'\'')"
+            test -e /usr/lib/systemd/system/rakuos-overlay-sync.service
+            test -e /usr/lib/systemd/system/rakuos-base-protect.service
+            test -x /usr/lib/rakuos/initrd/rakuos-overlay-mount
+            test -e /usr/lib/dracut/modules.d/90rakuos-overlay/module-setup.sh
+
+            test -s /usr/share/rakuos/de-name
+            grep -qx plasma /usr/share/rakuos/de-name
+            test -s /usr/share/rakuos/protected-packages.txt
+            test -s /usr/share/rakuos/base-manifest.txt
+            test -e /usr/share/factory/var/lib/rakuos/packages.list
+            test ! -s /usr/share/factory/var/lib/rakuos/packages.list
+
+            # No fake upperdir content is allowed to make the mount happen.
+            test ! -e /usr/share/factory/var/lib/rakuos/overlay/upper/share/rakukrisos/.overlay-bootstrap
+
+            # The actual initramfs shipped with every kernel must contain the
+            # persistent-overlay binary and its dracut module.
+            found_initramfs=0
+            for img in /usr/lib/modules/*/initramfs.img; do
+              test -f "$img" || continue
+              found_initramfs=1
+              lsinitrd "$img" | grep -q rakuos-overlay-mount
+              lsinitrd "$img" | grep -q 90rakuos-overlay
+            done
+            test "$found_initramfs" -eq 1
+
+            ! rpm -q glibc-all-langpacks >/dev/null 2>&1
+          '
+
+          buildah run rakukrisos-validation -- bootc container lint
+          buildah rm rakukrisos-validation
+
+      # Keep docker/login-action because this exact combination with rootless
+      # Buildah successfully published the previous image to GHCR.
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Do not force compression here. The proven Buildah push handled registry
+      # compression itself and successfully published the image.
+      - name: Push immutable image
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euxo pipefail
+          buildah push "${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}"
+
+      - name: Push latest image
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euxo pipefail
+          buildah push "${REGISTRY}/${IMAGE_NAME}:latest"
+
+      - name: Print bootc switch command
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Image: ${REGISTRY}/${IMAGE_NAME}:latest"
+          echo "Switch: sudo bootc switch --transport container ${REGISTRY}/${IMAGE_NAME}:latest"

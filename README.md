@@ -1,19 +1,38 @@
-# old-Raku-
+# RakuKrisOS
 
-Archivio dei precedenti repository Raku/RakuOS/Kionite consolidati in branch separate.
+Minimal Fedora 44 bootc desktop OS derived from Fedora Minimal, retaining the RakuOS persistent `/usr` overlay and RUM package-management model.
 
-## Branch archiviate
+## Design goals
 
-- [`rakuos-base`](https://github.com/krism-eu/old-Raku-/tree/rakuos-base) — origine: `krism-eu/rakuos-base`
-- [`rakuos-kde-custom`](https://github.com/krism-eu/old-Raku-/tree/rakuos-kde-custom) — origine: `krism-eu/rakuos-kde-custom`
-- [`raku-minimal-1`](https://github.com/krism-eu/old-Raku-/tree/raku-minimal-1) — origine: `krism-eu/raku-minimal-1`
-- [`microRakuOS`](https://github.com/krism-eu/old-Raku-/tree/microRakuOS) — origine: `krism-eu/microRakuOS`
-- [`raku-kris`](https://github.com/krism-eu/old-Raku-/tree/raku-kris) — origine: `krism-eu/raku-kris`
-- [`kionite-base`](https://github.com/krism-eu/old-Raku-/tree/kionite-base) — origine: `krism-eu/kionite-base`
-- [`kionite-v1`](https://github.com/krism-eu/old-Raku-/tree/kionite-v1) — origine: `krism-eu/kionite-v1`
-- [`myrakuOS`](https://github.com/krism-eu/old-Raku-/tree/myrakuOS) — origine: `krism-eu/myrakuOS`
-- [`leap161`](https://github.com/krism-eu/old-Raku-/tree/leap161) — origine: `krism-eu/leap161`
+- Fedora 44 Minimal as the base.
+- Fedora stock kernel for the first release.
+- bootc + OSTree/composefs + dracut + systemd.
+- RakuOS persistent overlay infrastructure.
+- RakuOS RUM as the overlay package manager.
+- AppArmor as the only mandatory MAC; SELinux is not part of the runtime image.
+- Flatpak support.
+- KDE Plasma desktop with only the initial native GUI applications: Dolphin, Konsole and Kate.
+- Keep Fedora and RakuOS repositories available.
+- No gaming stack, NVIDIA-specific setup, Ollama, Nix or hardware-specific RakuOS extras in the first release.
 
-Le copie archiviate non contengono workflow GitHub Actions (`.github/workflows`).
+## Repository layout
 
-I repository sorgenti non vengono eliminati da questa operazione; possono essere archiviati o rimossi separatamente dopo aver verificato le branch.
+```text
+.
+├── Containerfile
+├── build_files/
+│   ├── base-packages.txt
+│   └── desktop-packages.txt
+└── packages/
+    └── (RakuOS source components are tracked on rakuos-upstream while the
+        slimmed variants are brought into the main build deliberately.)
+```
+
+## Branches
+
+- `main`: RakuKrisOS build and configuration.
+- `rakuos-upstream`: imported RakuOS components kept intact for comparison and provenance.
+
+## Current status
+
+The repository is intentionally being built in small, testable steps. The first implementation milestone is the Fedora 44 Minimal + RakuOS overlay boot path; desktop and package-selection work follows only after that path is verified.

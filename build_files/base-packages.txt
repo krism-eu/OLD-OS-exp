@@ -1,0 +1,64 @@
+# Fedora 44 Minimal + bootc base requirements
+bootc
+bootupd
+composefs
+composefs-libs
+dracut
+ostree
+systemd
+flatpak
+
+# Minimal graphical desktop base: Plasma shell/session + KWin
+plasma-workspace
+plasma-workspace-common
+plasma-workspace-libs
+plasma-desktop
+plasma-systemsettings
+kwin
+kwin-common
+kwin-libs
+kwayland
+kscreen
+kscreenlocker
+
+# Plasma Login Manager: keep the same functional stack as RakuOS KDE stock
+plasma-login-manager
+kcm-plasmalogin
+kde-settings-plasmalogin
+kde-settings-plasma
+plasma-keyboard
+xcb-util-cursor
+
+# Core desktop integration required for a usable Plasma session
+plasma-nm
+plasma-pa
+plasma-integration
+kde-cli-tools
+polkit-kde
+polkit-qt6-1
+powerdevil
+kglobalacceld
+ksystemstats
+xdg-desktop-portal
+xdg-desktop-portal-kde
+xdg-user-dirs
+
+# Audio/session plumbing
+pipewire
+pipewire-alsa
+pipewire-pulseaudio
+pipewire-jack-audio-connection-kit
+wireplumber
+phonon-qt6
+
+# Visual baseline: icons/cursor only. Do not add font collections explicitly;
+# keep only whatever font packages are pulled as hard dependencies by Fedora/Plasma.
+breeze-icon-theme
+kf6-breeze-icons
+breeze-cursor-theme
+
+# Languages/locales: English + Italian only; never glibc-all-langpacks.
+glibc-langpack-en
+glibc-langpack-it
+langpacks-core-en
+langpacks-core-it
