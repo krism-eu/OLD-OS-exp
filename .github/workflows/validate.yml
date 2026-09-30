@@ -1,0 +1,95 @@
+name: Validate recipe
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Generate Containerfile
+        uses: vanilla-os/vib-gh-action@v1.1.0
+        with:
+          recipe: recipe.yml
+      - name: Sanity checks
+        run: |
+          test -s Containerfile
+          grep -q 'vibversion: 1.1.0' recipe.yml
+          grep -q 'ghcr.io/vanilla-os/core:latest' Containerfile
+          grep -q 'plasma-desktop' Containerfile
+          grep -q 'APT::Install-Recommends "0"' recipe.yml
+          grep -q 'APT::Install-Suggests "0"' recipe.yml
+          ! grep -q 'APT::Install-Recommends "1"' recipe.yml
+          ! grep -qE '(^|[[:space:]-])(kde-standard|kde-full)([[:space:]]|$)' modules/10-kde-packages.yml
+
+          # Plasma is Wayland-only for users; SDDM deliberately keeps a minimal
+          # AMD/libinput X11 greeter as the recovery-safe display manager path.
+          grep -qE '^[[:space:]]*- sddm$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- sddm-theme-breeze$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- xserver-xorg$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- xserver-xorg-core$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- xserver-xorg-input-libinput$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- xserver-xorg-video-amdgpu$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- dbus-x11$' modules/10-kde-packages.yml
+          ! grep -qE '^[[:space:]]*- (greetd|tuigreet)$' modules/10-kde-packages.yml
+          test -s includes.container/etc/sddm.conf.d/10-kde.conf
+          grep -q '^DisplayServer=x11$' includes.container/etc/sddm.conf.d/10-kde.conf
+          test ! -e includes.container/etc/greetd/config.toml
+          grep -q 'EXTRA_XORG=' modules/15-hardware-prune.yml
+          grep -q 'xserver-xorg-video-amdgpu' modules/15-hardware-prune.yml
+          grep -q 'xserver-xorg-input-libinput' modules/15-hardware-prune.yml
+
+          # Vanilla installer compatibility: the installer copies FirstSetup.desktop
+          # into the temporary `vanilla` user's autostart and KDE needs SDDM autologin.
+          grep -q 'modules/12-vanilla-first-setup.yml' recipe.yml
+          grep -q 'Vanilla-KDE/first-setup/releases/download/v3.4.1/vanilla-first-setup.deb' modules/12-vanilla-first-setup.yml
+          grep -q '745a9bb0af8a163cae0d37018326ec05a7bbf801101e3000f6480dfad959c12b' modules/12-vanilla-first-setup.yml
+          grep -q 'org.vanillaos.FirstSetup.desktop' modules/12-vanilla-first-setup.yml
+          test -s includes.container/etc/sddm.conf.d/autologin.conf
+          grep -q '^User=vanilla$' includes.container/etc/sddm.conf.d/autologin.conf
+          grep -q '^Session=plasma$' includes.container/etc/sddm.conf.d/autologin.conf
+          test -s includes.container/usr/lib/systemd/system/clear-first-setup-steps.service
+          grep -q 'org.vanillaos.FirstSetup.commands' includes.container/usr/lib/systemd/system/clear-first-setup-steps.service
+          grep -q '/sysconf/sddm.conf.d/autologin.conf' recipe.yml
+
+          # Targeted graphics/firmware only: AMD Vega + MediaTek.
+          grep -qE '^[[:space:]]*- mesa-vulkan-drivers$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- firmware-amd-graphics$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- firmware-mediatek$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- amd64-microcode$' modules/10-kde-packages.yml
+          ! grep -qE '^[[:space:]]*- firmware-(iwlwifi|realtek|atheros|b43|brcm80211|sof|intel|nvidia|linux)' modules/10-kde-packages.yml
+          ! grep -qE '^[[:space:]]*- intel-microcode$' modules/10-kde-packages.yml
+          ! grep -qE '^[[:space:]]*- xserver-xorg-(video|input)-(ati|radeon|intel|nouveau|nvidia|vmware|vesa|fbdev|wacom|synaptics|evdev)$' modules/10-kde-packages.yml
+
+          # Minimal multimedia: no broad bad/ugly plugin sets or ffmpeg CLI package.
+          grep -qE '^[[:space:]]*- gstreamer1.0-plugins-base$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- gstreamer1.0-plugins-good$' modules/10-kde-packages.yml
+          grep -qE '^[[:space:]]*- gstreamer1.0-libav$' modules/10-kde-packages.yml
+          ! grep -qE '^[[:space:]]*- (gstreamer1.0-plugins-bad|gstreamer1.0-plugins-ugly|ffmpeg)$' modules/10-kde-packages.yml
+
+          # /sysconf is essential on Vanilla OS: mirror the final /etc only after
+          # package cleanup and lpkg lock, then never persist resolv.conf.
+          grep -qE '^[[:space:]]*- rsync$' modules/10-kde-packages.yml
+          grep -q 'lpkg --lock' recipe.yml
+          grep -q 'rsync -a /etc/ /sysconf/' recipe.yml
+          grep -q 'rm -f /sysconf/resolv.conf' recipe.yml
+          lock_line="$(grep -n 'lpkg --lock' recipe.yml | tail -1 | cut -d: -f1)"
+          rsync_line="$(grep -n 'rsync -a /etc/ /sysconf/' recipe.yml | tail -1 | cut -d: -f1)"
+          test "$lock_line" -lt "$rsync_line"
+
+          # VIB 1.1.0 cleanup is used, while APT indexes are removed only at the end.
+          grep -q '^[[:space:]]*cleanup:$' recipe.yml
+          grep -q '/var/cache/debconf' recipe.yml
+          ! sed -n '/^[[:space:]]*cleanup:$/,/^[[:space:]]*modules:$/p' recipe.yml | grep -q '/var/lib/apt/lists'
+          grep -q 'rm -rf /var/lib/apt/lists/\*' recipe.yml
+
+          test -s includes.container/usr/share/abroot/abroot.json
+          python3 -m json.tool includes.container/usr/share/abroot/abroot.json >/dev/null
+          grep -q '"name": "changed_automatically_by_vib"' includes.container/usr/share/abroot/abroot.json
+          grep -q '"iPkgMngPre": "lpkg --unlock"' includes.container/usr/share/abroot/abroot.json
+          ! grep -qE 'rm[^\n]*[[:space:]]/sources([[:space:]]|$)' recipe.yml
+          ! grep -R --line-number 'polkit.Result.YES' recipe.yml modules includes.container

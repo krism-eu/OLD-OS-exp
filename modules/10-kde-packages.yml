@@ -1,0 +1,75 @@
+name: kde-packages
+type: apt
+sources:
+  - packages:
+      # Plasma 6: user session is Wayland-only.
+      - plasma-desktop
+      - plasma-workspace
+      - kwin-wayland
+      - systemsettings
+      - kscreen
+      - polkit-kde-agent-1
+
+      # SDDM uses a deliberately minimal X11 greeter safety stack. Plasma X11
+      # itself is not exposed: only the greeter gets X.Org, with AMD + libinput.
+      - xserver-xorg-core
+      - xserver-xorg-input-libinput
+      - xserver-xorg-video-amdgpu
+      - xserver-xorg
+      - dbus-x11
+      - sddm
+      - sddm-theme-breeze
+
+      - breeze-icon-theme
+      - breeze-cursor-theme
+      - breeze-gtk-theme
+      - layer-shell-qt
+      - plasma-nm
+      - plasma-pa
+      - powerdevil
+      - bluedevil
+      - kio-extras
+      - udisks2
+      - upower
+      - xdg-desktop-portal
+      - xdg-desktop-portal-kde
+      - xdg-user-dirs
+      - xdg-utils
+
+      # AMD Vega graphics: Mesa OpenGL/DRI + RADV Vulkan.
+      - libgl1-mesa-dri
+      - mesa-vulkan-drivers
+
+      # PipeWire audio plus a deliberately small multimedia codec set.
+      - pipewire
+      - pipewire-pulse
+      - pipewire-alsa
+      - wireplumber
+      - gstreamer1.0-plugins-base
+      - gstreamer1.0-plugins-good
+      - gstreamer1.0-libav
+
+      # Network / Bluetooth / printing used on the target system.
+      - network-manager
+      - bluez
+      - cups
+
+      # Hardware target: Ryzen 5 5600U / AMD Vega + MediaTek Wi-Fi/Bluetooth.
+      - firmware-amd-graphics
+      - firmware-mediatek
+      - amd64-microcode
+
+      # Required to persist the final /etc tree into Vanilla OS /sysconf.
+      - rsync
+
+      # Minimal base font.
+      - fonts-dejavu-core
+
+      # Minimal applications.
+      - dolphin
+      - konsole
+      - kate
+      - okular
+      - ark
+      - kcalc
+      - kde-spectacle

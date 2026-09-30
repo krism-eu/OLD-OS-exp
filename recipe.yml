@@ -1,0 +1,85 @@
+name: Vanilla Core KDE
+id: vanilla-core-kde
+vibversion: 1.1.0
+
+stages:
+  - id: build
+    base: ghcr.io/vanilla-os/core:latest
+    addincludes: true
+    singlelayer: false
+    labels:
+      maintainer: krism-eu
+      org.opencontainers.image.title: Vanilla Core KDE
+      org.opencontainers.image.description: Minimal Vanilla OS Core image with KDE Plasma
+      org.opencontainers.image.source: https://github.com/krism-eu/vanillaCoreKDE
+    args:
+      DEBIAN_FRONTEND: noninteractive
+
+    runs:
+      commands:
+        - printf '%s\n' 'APT::Install-Recommends "0";' 'APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01norecommends
+
+    # VIB 1.1.0 removes these after every generated RUN command. Keep APT
+    # package indexes out of this list because later modules still need them.
+    cleanup:
+      - /var/cache/apt/archives/*.deb
+      - /var/cache/debconf
+      - /var/cache/ldconfig
+      - /var/cache/man
+      - /var/log/*
+      - /root/.cache
+      - /tmp/*
+      - /var/tmp/*
+
+    modules:
+      - name: init-setup
+        type: shell
+        commands:
+          - apt-get update
+
+      - name: vanilla-tools
+        type: shell
+        sources:
+          - type: tar
+            url: https://github.com/Vanilla-OS/vanilla-tools/releases/download/v1.0.0/vanilla-tools.tar.gz
+            checksum: 0e1d92d9c9154f9a115e97b40ff692afa52ddd0d9f770a8ec67440bf1a48aa72
+        commands:
+          - mkdir -p /usr/bin
+          - LPKG_SRC="$(find /sources/vanilla-tools -type f -name lpkg -print -quit)" && test -n "$LPKG_SRC" && cp "$LPKG_SRC" /usr/bin/lpkg
+          - CUR_GPU_SRC="$(find /sources/vanilla-tools -type f -name cur-gpu -print -quit)" && test -n "$CUR_GPU_SRC" && cp "$CUR_GPU_SRC" /usr/bin/cur-gpu
+          - chmod +x /usr/bin/lpkg /usr/bin/cur-gpu
+
+      - name: kde-desktop
+        type: includes
+        includes:
+          - modules/10-kde-packages.yml
+          - modules/12-vanilla-first-setup.yml
+          - modules/15-hardware-prune.yml
+          - modules/20-kde-setup.yml
+          - modules/30-locale.yml
+
+      - name: set-image-name-abroot
+        type: includes
+        includes:
+          - modules/80-set-image-abroot-config.yml
+
+      - name: cleanup-and-sysconf-setup
+        type: shell
+        commands:
+          - apt-get autoremove --purge -y
+          - for pkg in firmware-amd-graphics firmware-mediatek amd64-microcode libgl1-mesa-dri mesa-vulkan-drivers gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav sddm sddm-theme-breeze xserver-xorg xserver-xorg-core xserver-xorg-input-libinput xserver-xorg-video-amdgpu dbus-x11 rsync; do status="$(dpkg-query -W -f='${db:Status-Status}' "$pkg" 2>/dev/null || true)"; test "$status" = installed || { echo "required package missing before lock - $pkg" >&2; exit 1; }; done
+          - test -f /usr/share/applications/org.vanillaos.FirstSetup.desktop || { echo "Vanilla First Setup desktop file missing before lock" >&2; exit 1; }
+          - test -f /etc/sddm.conf.d/autologin.conf
+          - grep -q '^User=vanilla$' /etc/sddm.conf.d/autologin.conf
+          - grep -q '^Session=plasma$' /etc/sddm.conf.d/autologin.conf
+          - dpkg-query -W -f='${Package} ${db:Status-Status}\n' > /tmp/final-package-status
+          - while read -r pkg status; do test "$status" = installed || continue; case "$pkg" in firmware-amd-graphics|firmware-mediatek|xserver-xorg|xserver-xorg-core|xserver-xorg-input-libinput|xserver-xorg-video-amdgpu|dbus-x11) ;; firmware-*|intel-microcode|xserver-xorg*|greetd|tuigreet) echo "unexpected hardware/login package before lock - $pkg" >&2; exit 1 ;; esac; done < /tmp/final-package-status
+          - rm -f /tmp/final-package-status
+          - apt-get clean
+          - lpkg --lock
+          - rsync -a /etc/ /sysconf/
+          - rm -f /sysconf/resolv.conf
+          - test -f /sysconf/default/locale
+          - test -f /sysconf/sddm.conf.d/10-kde.conf
+          - test -f /sysconf/sddm.conf.d/autologin.conf
+          - rm -rf /var/lib/apt/lists/*

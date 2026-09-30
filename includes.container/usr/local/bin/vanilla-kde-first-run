@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+marker="${XDG_STATE_HOME:-$HOME/.local/state}/vanilla-core-kde/first-run.done"
+[ -e "$marker" ] && exit 0
+mkdir -p "$(dirname "$marker")"
+
+xdg-user-dirs-update >/dev/null 2>&1 || true
+
+touch "$marker"
