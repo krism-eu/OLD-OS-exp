@@ -14,21 +14,137 @@ jobs:
   import:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout archive repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          fetch-depth: 0
-
-      - name: Import KrisOS main with full history
+      - name: Recreate exact KrisOS git objects in archive repository
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          expected='4be27021c77f3942d896e5a59baeb3af1e78e3ed'
-          git remote add krisos https://github.com/krism-eu/KrisOS.git
-          git fetch --no-tags krisos main
-          actual="$(git rev-parse refs/remotes/krisos/main)"
-          test "$actual" = "$expected"
-          git push origin refs/remotes/krisos/main:refs/heads/KrisOS
-          remote="$(git ls-remote origin refs/heads/KrisOS | awk '{print $1}')"
-          test "$remote" = "$expected"
-          echo "Imported KrisOS branch at $remote"
+          git clone --mirror https://github.com/krism-eu/KrisOS.git source.git
+          test "$(git -C source.git rev-parse refs/heads/main)" = '4be27021c77f3942d896e5a59baeb3af1e78e3ed'
+          python3 - <<'PY'
+          import base64
+          import datetime as dt
+          import json
+          import os
+          import re
+          import subprocess
+          import urllib.request
+
+          repo = os.environ['GITHUB_REPOSITORY']
+          token = os.environ['GH_TOKEN']
+          src = 'source.git'
+
+          def git(*args, binary=False):
+              p = subprocess.run(['git', '-C', src, *args], check=True, stdout=subprocess.PIPE)
+              return p.stdout if binary else p.stdout.decode('utf-8', 'strict')
+
+          def api(path, payload):
+              data = json.dumps(payload, separators=(',', ':')).encode()
+              req = urllib.request.Request(
+                  f'https://api.github.com/repos/{repo}{path}', data=data, method='POST',
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'krisos-history-import',
+                      'Content-Type': 'application/json',
+                  })
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          blob_done = set()
+          tree_done = set()
+          commit_done = set()
+
+          def ensure_blob(sha):
+              if sha in blob_done:
+                  return
+              raw = git('cat-file', 'blob', sha, binary=True)
+              got = api('/git/blobs', {
+                  'content': base64.b64encode(raw).decode(),
+                  'encoding': 'base64',
+              })['sha']
+              if got != sha:
+                  raise SystemExit(f'blob SHA mismatch: {sha} != {got}')
+              blob_done.add(sha)
+
+          def ensure_tree(tree_sha):
+              if tree_sha in tree_done:
+                  return
+              raw = git('ls-tree', '-r', '-z', tree_sha, binary=True)
+              entries = []
+              for item in raw.split(b'\0'):
+                  if not item:
+                      continue
+                  meta, path = item.split(b'\t', 1)
+                  mode_b, typ_b, sha_b = meta.split(b' ')
+                  mode = mode_b.decode()
+                  typ = typ_b.decode()
+                  sha = sha_b.decode()
+                  path_s = path.decode('utf-8', 'surrogateescape')
+                  if typ != 'blob':
+                      raise SystemExit(f'unsupported non-blob tree entry {typ} {path_s}')
+                  ensure_blob(sha)
+                  entries.append({'path': path_s, 'mode': mode, 'type': 'blob', 'sha': sha})
+              got = api('/git/trees', {'tree': entries})['sha']
+              if got != tree_sha:
+                  raise SystemExit(f'tree SHA mismatch: {tree_sha} != {got}')
+              tree_done.add(tree_sha)
+
+          who_re = re.compile(r'^(.*) <([^>]*)> ([0-9]+) ([+-][0-9]{4})$')
+
+          def identity(raw):
+              m = who_re.match(raw)
+              if not m:
+                  raise SystemExit(f'cannot parse identity: {raw!r}')
+              name, email, epoch_s, off = m.groups()
+              sign = 1 if off[0] == '+' else -1
+              mins = sign * (int(off[1:3]) * 60 + int(off[3:5]))
+              tz = dt.timezone(dt.timedelta(minutes=mins))
+              when = dt.datetime.fromtimestamp(int(epoch_s), tz).isoformat()
+              return {'name': name, 'email': email, 'date': when}
+
+          commits = [x for x in git('rev-list', '--reverse', '--topo-order', 'refs/heads/main').splitlines() if x]
+          for idx, sha in enumerate(commits, 1):
+              raw = git('cat-file', 'commit', sha, binary=True)
+              header, message_b = raw.split(b'\n\n', 1)
+              lines = header.decode('utf-8', 'strict').splitlines()
+              values = {}
+              parents = []
+              for line in lines:
+                  if line.startswith(' '):
+                      raise SystemExit(f'unsupported multiline commit header in {sha}')
+                  key, value = line.split(' ', 1)
+                  if key == 'parent':
+                      parents.append(value)
+                  elif key in ('tree', 'author', 'committer'):
+                      values[key] = value
+                  else:
+                      raise SystemExit(f'unsupported commit header {key!r} in {sha}')
+              tree = values['tree']
+              ensure_tree(tree)
+              missing = [p for p in parents if p not in commit_done]
+              if missing:
+                  raise SystemExit(f'parent order failure for {sha}: {missing}')
+              message = message_b.decode('utf-8', 'strict')
+              payload = {
+                  'message': message,
+                  'tree': tree,
+                  'parents': parents,
+                  'author': identity(values['author']),
+                  'committer': identity(values['committer']),
+              }
+              got = api('/git/commits', payload)['sha']
+              if got != sha:
+                  raise SystemExit(f'commit SHA mismatch: {sha} != {got}')
+              commit_done.add(sha)
+              if idx % 25 == 0 or idx == len(commits):
+                  print(f'commits imported: {idx}/{len(commits)}')
+
+          tip = git('rev-parse', 'refs/heads/main').strip()
+          if tip != '4be27021c77f3942d896e5a59baeb3af1e78e3ed':
+              raise SystemExit('unexpected source tip')
+          print(f'EXACT_IMPORT_READY={tip}')
+          print(f'objects: commits={len(commit_done)} trees={len(tree_done)} blobs={len(blob_done)}')
+          PY
