@@ -105,21 +105,39 @@ jobs:
               when = dt.datetime.fromtimestamp(int(epoch_s), tz).isoformat()
               return {'name': name, 'email': email, 'date': when}
 
+          def parse_headers(header_b, sha):
+              headers = []
+              current_key = None
+              current_value = None
+              for raw_line in header_b.split(b'\n'):
+                  if raw_line.startswith(b' '):
+                      if current_key is None:
+                          raise SystemExit(f'orphan continuation header in {sha}')
+                      current_value += b'\n' + raw_line[1:]
+                      continue
+                  if current_key is not None:
+                      headers.append((current_key, current_value))
+                  key_b, value_b = raw_line.split(b' ', 1)
+                  current_key = key_b.decode('ascii')
+                  current_value = value_b
+              if current_key is not None:
+                  headers.append((current_key, current_value))
+              return headers
+
           commits = [x for x in git('rev-list', '--reverse', '--topo-order', 'refs/heads/main').splitlines() if x]
           for idx, sha in enumerate(commits, 1):
               raw = git('cat-file', 'commit', sha, binary=True)
-              header, message_b = raw.split(b'\n\n', 1)
-              lines = header.decode('utf-8', 'strict').splitlines()
+              header_b, message_b = raw.split(b'\n\n', 1)
               values = {}
               parents = []
-              for line in lines:
-                  if line.startswith(' '):
-                      raise SystemExit(f'unsupported multiline commit header in {sha}')
-                  key, value = line.split(' ', 1)
+              signature = None
+              for key, value_b in parse_headers(header_b, sha):
                   if key == 'parent':
-                      parents.append(value)
+                      parents.append(value_b.decode('ascii'))
                   elif key in ('tree', 'author', 'committer'):
-                      values[key] = value
+                      values[key] = value_b.decode('utf-8', 'strict')
+                  elif key == 'gpgsig':
+                      signature = value_b.decode('utf-8', 'strict')
                   else:
                       raise SystemExit(f'unsupported commit header {key!r} in {sha}')
               tree = values['tree']
@@ -127,14 +145,15 @@ jobs:
               missing = [p for p in parents if p not in commit_done]
               if missing:
                   raise SystemExit(f'parent order failure for {sha}: {missing}')
-              message = message_b.decode('utf-8', 'strict')
               payload = {
-                  'message': message,
+                  'message': message_b.decode('utf-8', 'strict'),
                   'tree': tree,
                   'parents': parents,
                   'author': identity(values['author']),
                   'committer': identity(values['committer']),
               }
+              if signature is not None:
+                  payload['signature'] = signature
               got = api('/git/commits', payload)['sha']
               if got != sha:
                   raise SystemExit(f'commit SHA mismatch: {sha} != {got}')
